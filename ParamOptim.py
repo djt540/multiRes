@@ -12,8 +12,8 @@ class ParamOpt:
         best_eta = 0
         best_err = 1
         best_gamma_all = 0
-        for alpha in tqdm(torch.arange(0.05, 0.3, 0.01), desc='alpha', leave=False, position=0):
-            for eta in tqdm(torch.arange(0.5, 1, 0.05), desc='eta  ', leave=False, position=1):
+        for alpha in torch.arange(0.05, 0.3, 0.01):
+            for eta in torch.arange(0.5, 1, 0.05):
                 self.model.last_node.alpha = alpha
                 self.model.last_node.eta = eta
                 states = self.model.run(signal)  # need to pass alpha and eta to reservoir
@@ -24,7 +24,7 @@ class ParamOpt:
                 gammas = torch.logspace(-9, -3, 7)
                 best_gamma = 0
                 local_best_error = 1
-                for gamma in tqdm(gammas, desc='gamma', leave=False, position=2):
+                for gamma in gammas:
                     w_out = self.model.RidgeRegression(x_train, y_train, gamma)
                     y_pred = x_valid @ w_out
                     error = torch.sum((y_pred - y_valid) ** 2) / len(y_valid)
@@ -57,5 +57,5 @@ class ParamOpt:
 
         # prediction = x_valid @ w_out
 
-        self.model.simple_plot(x_valid, y_valid)
+        # self.model.simple_plot(x_valid, y_valid)
         return best_err

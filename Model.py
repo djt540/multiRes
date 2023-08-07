@@ -28,7 +28,7 @@ class Model:
 
     def run(self, signal: torch.Tensor) -> torch.Tensor:
         output = torch.zeros((len(signal), self.last_node.num_nodes))
-        for ts in tqdm(range(len(signal) - 1), desc='model', leave=False):
+        for ts in range(len(signal) - 1):
             output[ts, :] = self.first_node.forward(signal[ts + 1])
         return output
     
