@@ -13,12 +13,12 @@ class Node(ABC):
 class Model:
     def __init__(self, node_list: tuple):
         self.weights = None
+        self.gamma = 0.3
         self.node_list = node_list
         self.model_len = len(self.node_list)
 
         self.first_node = self.node_list[0]
         self.last_node = self.node_list[self.model_len - 1]
-        print(self.last_node)
         self.node_names = []
 
         for n in range(len(node_list) - 1):
@@ -44,12 +44,12 @@ class Model:
     def __str__(self):
         return '->'.join(self.node_names)
 
-    def RidgeRegression(self, states, target, gamma=0.03):
+    def RidgeRegression(self, states, target):
         # Setup matrices from inputs
         M1 = states.T @ target
         M2 = states.T @ states
         # Perform ridge regression
-        self.weights = torch.linalg.pinv(M2 + gamma * torch.eye(len(M2))) @ M1
+        self.weights = torch.linalg.pinv(M2 + self.gamma * torch.eye(len(M2))) @ M1
         return self.weights
 
     @staticmethod
