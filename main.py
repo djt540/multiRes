@@ -16,8 +16,8 @@ def error_average(model_desc, num_tests):
     for x in range(num_tests):
         sig = (torch.rand(5000) / 2)
         mod = Model(model_desc)
-        po = ParamOpt(mod)
-        errors.append(po.run(sig))
+        po = ParamOpt(mod, sig)
+        errors.append(po.run())
 
     # with open('test-results.txt', 'a') as f:
     #     for error in errors:
@@ -35,20 +35,27 @@ def fb_tau_tester(model_desc):
     error_mat = np.ndarray((test_size, test_size))
 
     mod = Model(model_desc)
-    po = ParamOpt(mod)
+    res = mod.last_node
+
+    opt_params = [
+        dict(obj=res.alpha, min=0.05, max=0.3, step=0.01),
+        dict(obj=res.eta, min=0.5, max=1, step=0.05),
+    ]
+
+    po = ParamOpt(mod, sig)
     # po.run(sig)
 
     narma = mod.NARMAGen(sig, 10)
     _, y_train, y_valid, y_test = torch.split(narma, [250, 3750, 500, 500])
 
     # sweep tau and fb
-    for tm in tqdm(range(test_size)):
+    for tm in range(test_size):
         # CHANGE THIS IF THE NODE CHANGES LOCATION IN THE MODEL
         mod.node_list[0].eta = 0.1 + (tm/test_size)
         for fb in range(test_size):
             mod.node_list[0].fb_str = 0.1 + (fb/test_size)
 
-            po.run(sig)
+            po.anneal(opt_params)
             states = mod.run(sig)
             _, x_train, x_valid, x_test = torch.split(states, [250, 3750, 500, 500])
 
