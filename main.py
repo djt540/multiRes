@@ -51,9 +51,9 @@ def fb_tau_tester(model_desc):
     # sweep tau and fb
     for tm in range(test_size):
         # CHANGE THIS IF THE NODE CHANGES LOCATION IN THE MODEL
-        mod.node_list[0].eta = 0.1 + (tm/test_size)
+        mod.node_list[0].eta = 0.4 + (tm/test_size)
         for fb in range(test_size):
-            mod.node_list[0].fb_str = 0.1 + (fb/test_size)
+            mod.node_list[0].tau = 15 + fb
 
             po.anneal(opt_params)
             states = mod.run(sig)

@@ -43,13 +43,13 @@ if __name__ == "__main__":
     # plt.show()
 
     data = np.loadtxt('test-results.csv', delimiter=',')
-    # cols = np.arange(1, 11, 1)
-    # ind = np.arange(0.1, 1.1, 0.1)
-    ind = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 ]
-    cols = [1,  2,  3,  4,  5,  6,  7,  8,  9, 10]
 
-    df = pd.DataFrame(data, columns=ind, index=ind)
+    ind = [.4,  .5,  .6,  .7,  .8,  .9, 1.0, 1.1,1.2,1.3,]
+    cols = [15,16,17,18,19,20,21,22,23,24]
+    # cols = [.4,  .5,  .6,  .7,  .8,  .9, 1.0, 1.1,1.2,1.3]
+
+    df = pd.DataFrame(data, columns=cols, index=ind)
 
     ax = sns.heatmap(df, square=True, cmap="viridis")
-    ax.set(xlabel='tau', ylabel='feedback strength')
+    ax.set(xlabel='Number of Virtual Nodess', ylabel='input strength')
     plt.show()

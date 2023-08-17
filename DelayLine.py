@@ -18,7 +18,6 @@ class DelayLine(Node):
     def fb_str(self, fb_str):
         self._fb_str = fb_str
 
-
     @property
     def tau(self):
         return self._tau

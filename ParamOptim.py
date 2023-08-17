@@ -64,7 +64,7 @@ class ParamOpt:
 
         return best_err
 
-    def anneal(self, params_dict: list[dict], iterations=100, initial_temp=10):
+    def anneal(self, params_dict: list[dict], iterations=10, initial_temp=20):
         best_params = [uniform(params_dict[param]["min"], params_dict[param]["max"]) * params_dict[param]["step"]
                        for param in range(len(params_dict))]
 
