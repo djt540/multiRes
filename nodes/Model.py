@@ -1,5 +1,4 @@
 import torch
-from tqdm import tqdm
 from abc import ABC, abstractmethod
 import matplotlib.pyplot as plt
 
@@ -44,12 +43,12 @@ class Model:
     def __str__(self):
         return '->'.join(self.node_names)
 
-    def RidgeRegression(self, states, target):
+    def ridge_regression(self, states, target):
         # Setup matrices from inputs
-        M1 = states.T @ target
-        M2 = states.T @ states
+        mat_target = states.T @ target
+        mat_states = states.T @ states
         # Perform ridge regression
-        self.weights = torch.linalg.pinv(M2 + self.gamma * torch.eye(len(M2))) @ M1
+        self.weights = torch.linalg.pinv(mat_states + self.gamma * torch.eye(len(mat_states))) @ mat_target
         return self.weights
 
     @staticmethod
@@ -61,3 +60,14 @@ class Model:
             ns[t + 1, 0] = 0.3 * ns[t, 0] + 0.05 * ns[t, 0] * sum(ns[(t - (N - 1)):t, 0]) + 1.5 * signal[t] * \
                 signal[t - (N - 1)] + 0.1
         return ns
+
+    @staticmethod
+    def NRMSE(pred, target):
+        square_err = torch.sum((pred - target) ** 2)
+        var = torch.var(target)
+        return torch.sqrt(square_err / var)
+
+    def error_test(self, train, train_target, compare, compare_target):
+        w_out = self.ridge_regression(train, train_target)
+        pred = compare @ w_out
+        return self.NRMSE(pred, compare_target)

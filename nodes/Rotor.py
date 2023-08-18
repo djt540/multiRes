@@ -1,4 +1,4 @@
-from Model import *
+from nodes.Model import *
 
 
 class Rotor(Node):

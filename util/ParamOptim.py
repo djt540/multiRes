@@ -1,7 +1,6 @@
-import torch
 import numpy as np
 from random import random, uniform
-from Model import *
+from nodes.Model import *
 
 
 class ParamOpt:
@@ -44,13 +43,13 @@ class ParamOpt:
 
                 for gamma in gammas:
                     self.model.gamma = gamma
-                    error = self.error_test(x_train, x_valid)
+                    error = self.model.error_test(x_train, self.y_train, x_valid, self.y_valid)
                     if error < local_best_error:
                         best_gamma = gamma
                         self.model.gamma = gamma
                         local_best_error = error
 
-                error = self.error_test(x_train, x_test)
+                error = self.model.error_test(x_train, self.y_train, x_test, self.y_test)
 
                 if error < best_err:
                     best_alpha = alpha
@@ -64,20 +63,20 @@ class ParamOpt:
 
         return best_err
 
-    def anneal(self, params_dict: list[dict], iterations=10, initial_temp=20):
+    def anneal(self, params_dict: list[dict], iterations=7, initial_temp=20):
         best_params = [uniform(params_dict[param]["min"], params_dict[param]["max"]) * params_dict[param]["step"]
                        for param in range(len(params_dict))]
 
         self.params_step(params_dict, best_params)
 
         _, x_train, x_valid, _ = self.split_results(self.signal)
-        best_error = self.error_test(x_train, x_valid)
+        best_error = self.model.error_test(x_train, self.y_train, x_valid, self.y_valid)
 
-        for i in tqdm(range(iterations)):
+        for i in range(iterations):
             self.params_step(params_dict, best_params)
 
             _, x_train, x_valid, _ = self.split_results(self.signal)
-            error = self.error_test(x_train, x_valid)
+            error = self.model.error_test(x_train, self.y_train, x_valid, self.y_valid)
 
             error_diff = best_error - error
             acceptable = np.exp(error_diff / (initial_temp - i))
@@ -101,11 +100,6 @@ class ParamOpt:
     def params_update(params_dict: list[dict], params: list):
         for param in range(len(params_dict)):
             params_dict[param]["obj"] = params[param]
-
-    def error_test(self, train, compare) -> float:
-        w_out = self.model.RidgeRegression(train, self.y_train)
-        pred = compare @ w_out
-        return torch.sum((pred - self.y_valid) ** 2) / len(self.y_valid)
 
     def split_results(self, signal, splits=None):
         if splits is None:

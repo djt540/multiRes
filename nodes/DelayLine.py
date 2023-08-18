@@ -1,11 +1,9 @@
-from Model import *
+from nodes.Model import *
 
 
 class DelayLine(Node):
     def __init__(self, tau: int = 3, fb_str: float = 0.5, eta: float = 1):
-        self._tau = tau
-        self._fb_str = fb_str
-        self.eta = eta
+        self._tau, self._fb_str, self.eta = tau, fb_str, eta
         self.mask = 2 * torch.rand(tau) - 1
         self._wrapped = None
         self.name = 'DelayLine'
@@ -25,7 +23,7 @@ class DelayLine(Node):
     @tau.setter
     def tau(self, tau):
         self._tau = tau
-        self.mask = torch.rand(tau)
+        self.mask = 2 * torch.rand(tau) - 1
 
     @property
     def wrapped(self):
