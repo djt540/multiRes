@@ -31,7 +31,7 @@ def error_average(model_desc, num_tests):
 def fb_tau_tester(model_desc):
     sig = (torch.rand(5000) / 2)
 
-    test_size = 10
+    test_size = 5
     error_mat = np.ndarray((test_size, test_size))
 
     mod = Model(model_desc)
@@ -43,7 +43,6 @@ def fb_tau_tester(model_desc):
     ]
 
     po = ParamOpt(mod, sig)
-    # po.run(sig)
 
     narma = mod.NARMAGen(sig, 10)
     _, y_train, y_valid, y_test = torch.split(narma, [250, 3750, 500, 500])
@@ -51,9 +50,9 @@ def fb_tau_tester(model_desc):
     # sweep tau and fb
     for tm in range(test_size):
         # CHANGE THIS IF THE NODE CHANGES LOCATION IN THE MODEL
-        mod.node_list[0].eta = 0.4 + (tm/test_size)
+        mod.node_list[0].eta = 1 + (tm/test_size)
         for fb in range(test_size):
-            mod.node_list[0].tau = 15 + fb
+            mod.node_list[0].fb_str = 0.4 + (fb/test_size)
 
             po.anneal(opt_params)
             states = mod.run(sig)
@@ -66,34 +65,39 @@ def fb_tau_tester(model_desc):
     np.savetxt('test-results.csv', error_mat, delimiter=",", fmt='%f')
 
 
+def rotor_tester(model_desc):
+    sig = (torch.rand(1, 5000) / 2)
+
+    errors = []
+    for i in range(10):
+        mod = Model(model_desc)
+        res = mod.last_node
+        po = ParamOpt(mod, sig)
+
+        opt_params = [
+            dict(obj=res.alpha, min=0.05, max=0.3, step=0.01),
+            dict(obj=res.eta, min=0.5, max=1, step=0.05),
+        ]
+
+        narma = mod.NARMAGen(sig, 10)
+        _, y_train, y_valid, y_test = torch.split(narma, [250, 3750, 500, 500])
+
+        po.anneal(opt_params)
+
+        states = mod.run(sig)
+        _, x_train, x_valid, x_test = torch.split(states, [250, 3750, 500, 500])
+
+        w_out = mod.RidgeRegression(x_train, y_train)
+        pred = x_test @ w_out
+        print(torch.sum((pred - y_test) ** 2) / len(y_test))
+        errors.append(torch.sum((pred - y_test) ** 2) / len(y_test))
+
+    avrg_error = sum(errors) / 10
+
+    print(avrg_error)
+
+
 if __name__ == "__main__":
-    nnodes = 100
-    s = (torch.rand(5000) / 2)
-
-    reservoir = Reservoir(nnodes)
-
-    # models_list = [(DelayLine(time_multi, feedback), reservoir),
-    #                (Rotor(nnodes), reservoir),
-    #                (DelayLine(time_multi, feedback), Rotor(nnodes), reservoir),
-    #                (Rotor(nnodes), DelayLine(time_multi, feedback), reservoir)]
-
-    # models_list = [[(Rotor(nnodes), DelayLine(tm, fb), reservoir) for tm in torch.arange(1, 20, 1)]
-    #                for fb in torch.arange(0.5, 1.1, 0.02)]
-    #
-    # models_list = [val for sublist in models_list for val in sublist]
-
-    # models_list = [(Rotor(nnodes), DelayLine(), reservoir),
-    #                (Rotor(nnodes), DelayLine(), reservoir),
-    #                (Rotor(nnodes), DelayLine(), reservoir),
-    #                (Rotor(nnodes), DelayLine(), reservoir)]
-    #
-    # print(models_list)
-    #
-    # processes = []
-    # for model in models_list:
-    #     p = multiprocessing.Process(target=fb_tau_tester, args=(model,))
-    #     processes.append(p)
-    #     p.start()
-
-    fb_tau_tester((DelayLine(tau=3), reservoir))
-
+    nnodes = 1
+    fb_tau_tester((DelayLine(tau=15), Reservoir(nnodes)))
+    # rotor_tester((Rotor(nnodes), Reservoir(nnodes)))

@@ -44,12 +44,12 @@ if __name__ == "__main__":
 
     data = np.loadtxt('test-results.csv', delimiter=',')
 
-    ind = [.4,  .5,  .6,  .7,  .8,  .9, 1.0, 1.1,1.2,1.3,]
+    ind = [1.4,  1.5,  1.6,  1.7,  1.8]
     cols = [15,16,17,18,19,20,21,22,23,24]
-    # cols = [.4,  .5,  .6,  .7,  .8,  .9, 1.0, 1.1,1.2,1.3]
+    cols = [.4,  .5,  .6,  .7,  .8]
 
     df = pd.DataFrame(data, columns=cols, index=ind)
 
     ax = sns.heatmap(df, square=True, cmap="viridis")
-    ax.set(xlabel='Number of Virtual Nodess', ylabel='input strength')
+    ax.set(xlabel='feedback strength', ylabel='input strength')
     plt.show()
