@@ -31,18 +31,16 @@ def error_average(model_desc, num_tests):
 
 
 def fb_tau_tester(model_desc):
-    sig = (torch.rand(5000) / 2)
+    sig = torch.rand(5000) / 2
 
-    test_size = 3
+    test_size = 5
     error_mat = np.ndarray((test_size, test_size))
 
     mod = Model(model_desc)
     res = mod.last_node
 
-    opt_params = [
-        dict(obj=res.alpha, min=0.05, max=0.3, step=0.01),
-        dict(obj=res.eta, min=0.5, max=1, step=0.05),
-    ]
+    opt_params = [ParamOpt.Param(instance=res, name='alpha'),
+                  ParamOpt.Param(instance=res, name='eta')]
 
     po = ParamOpt(mod, sig)
 
@@ -52,11 +50,11 @@ def fb_tau_tester(model_desc):
     # sweep tau and fb
     for tm in range(test_size):
         # CHANGE THIS IF THE NODE CHANGES LOCATION IN THE MODEL
-        res.eta = 0.1 + (tm/test_size)
+        res.eta = 0.1 + (tm / test_size)
         for fb in range(test_size):
             res.reset_states()
-            res.fb_str = 0.1 + (fb/test_size)
-            po.run()
+            res.fb_str = 0.1 + (fb / test_size)
+            po.anneal(opt_params)
             states = mod.run(sig)
             _, x_train, x_valid, x_test = torch.split(states, [250, 3750, 500, 500])
 
@@ -69,9 +67,8 @@ def fb_tau_tester(model_desc):
         print(error_mat)
 
 
-
 def rotor_tester(model_desc):
-    sig = (torch.rand(1, 5000) / 2)
+    sig = (torch.rand(5000) / 2)
 
     errors = []
     for i in range(10):
@@ -79,10 +76,9 @@ def rotor_tester(model_desc):
         res = mod.last_node
         po = ParamOpt(mod, sig)
 
-        opt_params = [
-            dict(obj=res.alpha, min=0.05, max=0.3, step=0.01),
-            dict(obj=res.eta, min=0.5, max=1, step=0.05),
-        ]
+        opt_params = [ParamOpt.Param(instance=res, name='alpha'),
+                      ParamOpt.Param(instance=res, name='eta')
+                      ]
 
         narma = mod.NARMAGen(sig, 10)
         _, y_train, y_valid, y_test = torch.split(narma, [250, 3750, 500, 500])

@@ -1,7 +1,7 @@
 import numpy as np
 from random import random, uniform
 from nodes.Model import *
-
+from dataclasses import dataclass
 
 class ParamOpt:
     def __init__(self, model: Model, signal):
@@ -63,41 +63,43 @@ class ParamOpt:
 
         return best_err
 
-    def anneal(self, iterations=12, initial_temp=20, *params_dict):
-        best_params = [uniform(params_dict[param]["min"], params_dict[param]["max"]) * params_dict[param]["step"]
-                       for param in params_dict]
+    @dataclass
+    class Param:
+        instance: object
+        name: str
+        min: float = 0.3
+        max: float = 0.7
+        step: float = 0.1
+        cur_val: float = uniform(min, max)
+        best_val: float = cur_val
 
-        self.params_step(best_params, params_dict)
-
-        _, x_train, x_valid, _ = self.split_results(self.signal)
+    def anneal(self, params_list: list[Param], iterations=12, initial_temp=20):
+        self.params_step(params_list)
+        _, x_train, x_valid, x_test = self.split_results(self.signal)
         best_error = self.model.error_test(x_train, self.y_train, x_valid, self.y_valid)
 
         for i in range(iterations):
-            self.params_step(best_params, params_dict)
-            _, x_train, x_valid, _ = self.split_results(self.signal)
+            self.params_step(params_list)
+            _, x_train, x_valid, x_test = self.split_results(self.signal)
+
             error = self.model.error_test(x_train, self.y_train, x_valid, self.y_valid)
             error_diff = best_error - error
+
             acceptable = np.exp(error_diff / (initial_temp - i))
 
             if error_diff < 0 or random() < acceptable:
                 best_error = error
-                best_params = [params_dict[param]["obj"] for param in params_dict]
+                for param in params_list:
+                    param.best_val = param.cur_val
 
         # return Params and Error
         return best_error
 
-    def params_step(self, best_params: list, *params_dict):
-        update_list = [
-            best_params[param] + (
-                        uniform(params_dict[param]["min"], params_dict[param]["max"]) * params_dict[param]["step"])
-            for param in range(len(params_dict))]
-
-        self.params_update(update_list, params_dict)
-
     @staticmethod
-    def params_update(params: list, *params_dict):
-        for param in params_dict:
-            params_dict[param]["obj"] = params[param]
+    def params_step(params_list: list[Param]):
+        for param in params_list:
+            param.cur_val = param.best_val + uniform(-0.5, 0.5) * param.step
+            setattr(param.instance, param.name, param.cur_val)
 
     def split_results(self, signal, splits=None):
         if splits is None:

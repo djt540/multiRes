@@ -2,7 +2,6 @@ from nodes.Model import *
 from nodes.DelayLine import DelayLine
 from nodes.Rotor import Rotor
 from nodes.Reservoir import Reservoir
-import numpy as np
 
 # this file is a bit of a mess
 
@@ -25,7 +24,8 @@ class TestLine(Node):
 
 
 if __name__ == '__main__':
-    sig = torch.ones(5)
+    # sig = torch.ones(5)
+    sig = torch.rand(5000)
     model_test = Model((DelayLine(tau=120), TestLine(2, verbose=False)))
 
     del_line = model_test.node_list[0]
@@ -33,8 +33,8 @@ if __name__ == '__main__':
     del_line.fb_str = 0.5
     del_line.mask = torch.rand(del_line.tau)
 
-    # model_test = Model((DelayLine(tau=10), Reservoir(3)))
-    model_test = Model((Rotor(3), Reservoir(3)))
+    model_test = Model((DelayLine(tau=5, fb_str=0.5), Reservoir(5)))
+    # model_test = Model((Rotor(3), Reservoir(3)))
 
     out = model_test.run(sig)
     print(out)
