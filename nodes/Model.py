@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 class Node(ABC):
     @abstractmethod
-    def forward(self, signal: torch.Tensor) -> torch.Tensor:
+    def forward(self, signal: torch.Tensor, fb_str: float = 0) -> torch.Tensor:
         pass
 
 
@@ -27,8 +27,8 @@ class Model:
 
     def run(self, signal: torch.Tensor) -> torch.Tensor:
         output = torch.zeros((len(signal), self.last_node.num_nodes))
-        for ts in range(len(signal) - 1):
-            output[ts, :] = self.first_node.forward(signal[ts + 1])
+        for ts in range(len(signal)):
+            output[ts, :] = self.first_node.forward(signal[ts])
         return output
     
     def simple_plot(self, testing, target):
@@ -63,7 +63,7 @@ class Model:
 
     @staticmethod
     def NRMSE(pred, target):
-        square_err = torch.sum((pred - target) ** 2)
+        square_err = torch.sum((pred - target) ** 2) / len(target)
         var = torch.var(target)
         return torch.sqrt(square_err / var)
 

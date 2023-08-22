@@ -1,12 +1,23 @@
 from nodes.Model import *
+import numpy as np
 
 
 class DelayLine(Node):
     def __init__(self, tau: int = 3, fb_str: float = 0.5, eta: float = 1):
-        self._tau, self._fb_str, self.eta = tau, fb_str, eta
-        self.mask = 2 * torch.rand(tau) - 1
-        self._wrapped = None
         self.name = 'DelayLine'
+
+        self._tau, self._fb_str, self.eta = tau, fb_str, eta
+        self.mask = torch.rand(tau)
+
+        self._wrapped = None
+
+    def forward(self, signal: torch.Tensor, fb_str: float = 1) -> torch.Tensor:
+        if self.wrapped is not None:
+            out_list = [(self.wrapped.forward(signal * self.eta * self.mask[theta], self._fb_str))
+                        for theta in range(self.tau)]
+            return torch.sum(torch.stack(out_list), dim=0)
+        else:
+            raise Exception("Delay Line has nothing to wrap")
 
     @property
     def fb_str(self):
@@ -23,7 +34,7 @@ class DelayLine(Node):
     @tau.setter
     def tau(self, tau):
         self._tau = tau
-        self.mask = 2 * torch.rand(tau) - 1
+        self.mask = torch.rand(tau)
 
     @property
     def wrapped(self):
@@ -32,11 +43,3 @@ class DelayLine(Node):
     @wrapped.setter
     def wrapped(self, node: Node):
         self._wrapped = node
-
-    def forward(self, signal: torch.Tensor) -> torch.Tensor:
-        if self.wrapped is not None:
-            out_list = [self.fb_str * (self.wrapped.forward(signal * self.eta * self.mask[theta]))
-                        for theta in range(self.tau)]
-            return torch.sum(torch.stack(out_list))
-        else:
-            raise Exception("Delay Line has nothing to wrap")

@@ -4,9 +4,9 @@ import seaborn as sns
 import pandas as pd
 
 if __name__ == "__main__":
-    data = np.loadtxt('test-results.csv', delimiter=',')
+    data = np.loadtxt('../test-results.csv', delimiter=',')
 
-    steps = 5
+    steps = 10
     cols = [0.1 + (i/steps) for i in range(steps)]
     inds = [0.1 + (i/steps) for i in range(steps)]
 

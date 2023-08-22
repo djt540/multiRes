@@ -63,42 +63,40 @@ class ParamOpt:
 
         return best_err
 
-    def anneal(self, params_dict: list[dict], iterations=7, initial_temp=20):
+    def anneal(self, iterations=12, initial_temp=20, *params_dict):
         best_params = [uniform(params_dict[param]["min"], params_dict[param]["max"]) * params_dict[param]["step"]
-                       for param in range(len(params_dict))]
+                       for param in params_dict]
 
-        self.params_step(params_dict, best_params)
+        self.params_step(best_params, params_dict)
 
         _, x_train, x_valid, _ = self.split_results(self.signal)
         best_error = self.model.error_test(x_train, self.y_train, x_valid, self.y_valid)
 
         for i in range(iterations):
-            self.params_step(params_dict, best_params)
-
+            self.params_step(best_params, params_dict)
             _, x_train, x_valid, _ = self.split_results(self.signal)
             error = self.model.error_test(x_train, self.y_train, x_valid, self.y_valid)
-
             error_diff = best_error - error
             acceptable = np.exp(error_diff / (initial_temp - i))
 
             if error_diff < 0 or random() < acceptable:
                 best_error = error
-                best_params = [params_dict[param]["obj"] for param in range(len(params_dict))]
+                best_params = [params_dict[param]["obj"] for param in params_dict]
 
         # return Params and Error
         return best_error
 
-    def params_step(self, params_dict: list[dict], best_params: list):
+    def params_step(self, best_params: list, *params_dict):
         update_list = [
             best_params[param] + (
                         uniform(params_dict[param]["min"], params_dict[param]["max"]) * params_dict[param]["step"])
             for param in range(len(params_dict))]
 
-        self.params_update(params_dict, update_list)
+        self.params_update(update_list, params_dict)
 
     @staticmethod
-    def params_update(params_dict: list[dict], params: list):
-        for param in range(len(params_dict)):
+    def params_update(params: list, *params_dict):
+        for param in params_dict:
             params_dict[param]["obj"] = params[param]
 
     def split_results(self, signal, splits=None):
