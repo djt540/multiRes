@@ -6,9 +6,9 @@ from nodes.Reservoir import Reservoir
 # this file is a bit of a mess
 
 
-class TestLine(Node):
+class BlankLine(Node):
     def __init__(self, num_nodes, verbose=True):
-        self.name = 'TestLine'
+        self.name = 'BlankLine'
 
         self.verbose = verbose
         self.num_nodes = num_nodes
@@ -17,15 +17,13 @@ class TestLine(Node):
         self.wrapped = None
 
     def forward(self, signal):
-        self.prev_state = self.wrapped.forward(signal)
-        if self.verbose:
-            print(self.prev_state)
-        return self.prev_state
+        output = self.wrapped.forward(signal)
+        return output
 
 
 if __name__ == '__main__':
     sig = torch.rand(5000)
-    model_test = Model((DelayLine(tau=120), TestLine(2, verbose=False)))
+    model_test = Model((DelayLine(tau=120), BlankLine(2, verbose=False)))
 
     del_line = model_test.node_list[0]
     del_line.eta = 0.5

@@ -9,6 +9,7 @@ from nodes.Reservoir import Reservoir
 from nodes.Model import *
 from util.ParamOptim import ParamOpt
 from scipy import optimize
+from nodes.value_tester import BlankLine
 
 
 def error_average(model_desc, num_tests):
@@ -95,13 +96,15 @@ def _tester(model_desc):
         print(mod.NRMSE(pred, y_test))
         errors.append(torch.sum((pred - y_test) ** 2) / len(y_test))
 
-    avrg_error = sum(errors) / 10
-
-    print(avrg_error)
 
 
 if __name__ == "__main__":
-    nnodes = 100
+    nnodes = 400
     # fb_tau_tester((DelayLine(tau=15), Reservoir(nnodes)))
     # _tester((Rotor(nnodes), Reservoir(nnodes)))
-    _tester((DelayLine(tau=20, fb_str=0.4, eta=0.4), Reservoir(nnodes)))
+    res = Reservoir(nnodes)
+    _tester((BlankLine(nnodes, verbose=False), res))
+    res.reset_states()
+    _tester((Rotor(nnodes), res))
+    res.reset_states()
+    _tester((DelayLine(tau=80, fb_str=0.4, eta=0.2), res))

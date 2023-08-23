@@ -15,9 +15,8 @@ class DelayLine(Node):
             for theta in range(self.tau):
                 masked_value = (signal * self.eta * self.mask[theta])
                 old_state = (self.v_states[theta] * self.fb_str)
-                new_state = self.wrapped.forward(masked_value + old_state)
-                self.v_states[theta] = new_state
-            return new_state
+                self.v_states[theta] = self.wrapped.forward(masked_value + old_state)
+            return self.v_states[self.tau - 1]
         else:
             raise Exception("Delay Line has nothing to wrap")
 
