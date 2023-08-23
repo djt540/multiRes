@@ -67,17 +67,20 @@ def fb_tau_tester(model_desc):
         print(error_mat)
 
 
-def rotor_tester(model_desc):
+def _tester(model_desc):
     sig = (torch.rand(5000) / 2)
 
     errors = []
-    for i in range(10):
+    for i in range(1):
         mod = Model(model_desc)
         res = mod.last_node
         po = ParamOpt(mod, sig)
 
+        res.reset_states()
+
         opt_params = [ParamOpt.Param(instance=res, name='alpha'),
-                      ParamOpt.Param(instance=res, name='eta')
+                      ParamOpt.Param(instance=res, name='eta'),
+                      ParamOpt.Param(instance=res, name='rho')
                       ]
 
         narma = mod.NARMAGen(sig, 10)
@@ -90,7 +93,7 @@ def rotor_tester(model_desc):
 
         w_out = mod.ridge_regression(x_train, y_train)
         pred = x_test @ w_out
-        print(torch.sum((pred - y_test) ** 2) / len(y_test))
+        print(mod.NRMSE(pred, y_test))
         errors.append(torch.sum((pred - y_test) ** 2) / len(y_test))
 
     avrg_error = sum(errors) / 10
@@ -100,5 +103,6 @@ def rotor_tester(model_desc):
 
 if __name__ == "__main__":
     nnodes = 100
-    fb_tau_tester((DelayLine(tau=15), Reservoir(nnodes)))
-    # rotor_tester((Rotor(nnodes), Reservoir(nnodes)))
+    # fb_tau_tester((DelayLine(tau=15), Reservoir(nnodes)))
+    # _tester((Rotor(nnodes), Reservoir(nnodes)))
+    _tester((DelayLine(tau=20, fb_str=0.4, eta=0.4), Reservoir(nnodes)))

@@ -16,7 +16,7 @@ class TestLine(Node):
 
         self.wrapped = None
 
-    def forward(self, signal, fb_str=1):
+    def forward(self, signal):
         self.prev_state = self.wrapped.forward(signal)
         if self.verbose:
             print(self.prev_state)
@@ -24,7 +24,6 @@ class TestLine(Node):
 
 
 if __name__ == '__main__':
-    # sig = torch.ones(5)
     sig = torch.rand(5000)
     model_test = Model((DelayLine(tau=120), TestLine(2, verbose=False)))
 

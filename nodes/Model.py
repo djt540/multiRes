@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 class Node(ABC):
     @abstractmethod
-    def forward(self, signal: torch.Tensor, fb_str: float = 0) -> torch.Tensor:
+    def forward(self, signal: torch.Tensor) -> torch.Tensor:
         pass
 
 
@@ -63,9 +63,9 @@ class Model:
 
     @staticmethod
     def NRMSE(pred, target):
-        square_err = torch.sum((pred - target) ** 2) / len(target)
+        square_err = torch.sum((pred - target) ** 2)
         var = torch.var(target)
-        return torch.sqrt(square_err / var)
+        return torch.sqrt((square_err / var) * (1 / len(target)))
 
     def error_test(self, train, train_target, compare, compare_target):
         w_out = self.ridge_regression(train, train_target)
