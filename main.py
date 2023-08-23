@@ -99,7 +99,7 @@ def _tester(model_desc):
 
 
 if __name__ == "__main__":
-    nnodes = 400
+    nnodes = 100
     # fb_tau_tester((DelayLine(tau=15), Reservoir(nnodes)))
     # _tester((Rotor(nnodes), Reservoir(nnodes)))
     res = Reservoir(nnodes)
@@ -107,4 +107,4 @@ if __name__ == "__main__":
     res.reset_states()
     _tester((Rotor(nnodes), res))
     res.reset_states()
-    _tester((DelayLine(tau=80, fb_str=0.4, eta=0.2), res))
+    _tester((DelayLine(tau=20, fb_str=0.4, eta=0.2), res))

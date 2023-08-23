@@ -2,7 +2,7 @@ from nodes.Model import *
 
 
 class Reservoir(Node):
-    def __init__(self, num_nodes, sparsity=0.8, alpha: float = 0.1, eta: float = 0.1, rho: float = 0.9):
+    def __init__(self, num_nodes, sparsity=0.8, alpha: float = 0.9, eta: float = 0.7, rho: float = 0.9):
         self.name = 'Res'
 
         self.num_nodes = num_nodes
