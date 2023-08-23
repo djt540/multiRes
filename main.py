@@ -79,8 +79,7 @@ def _tester(model_desc):
         res.reset_states()
 
         opt_params = [ParamOpt.Param(instance=res, name='alpha'),
-                      ParamOpt.Param(instance=res, name='eta'),
-                      ParamOpt.Param(instance=res, name='rho')
+                      ParamOpt.Param(instance=res, name='eta')
                       ]
 
         narma = mod.NARMAGen(sig, 10)
