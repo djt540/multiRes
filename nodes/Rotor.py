@@ -15,7 +15,7 @@ class Rotor(Node):
             if self.roll_count >= self.num_nodes:
                 self.roll_count = 0
 
-            state = self.wrapped.forward(signal * torch.roll(self.mask, self.roll_count))
+            state = self.wrapped.forward(signal * torch.roll(self.mask, self.roll_count), fb_str)
             self.roll_count += 1
             return torch.roll(state, -self.roll_count)
         else:
