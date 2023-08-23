@@ -6,11 +6,9 @@ class Reservoir(Node):
         self.name = 'Res'
 
         self.num_nodes = num_nodes
-        self.node_mask = 2 * torch.rand(num_nodes) - 1
         self._alpha, self._eta = alpha, eta
 
         self.prev_state = torch.zeros((1, num_nodes))
-
 
     def reset_states(self):
         self.prev_state = torch.zeros((1, self.num_nodes))
@@ -19,7 +17,7 @@ class Reservoir(Node):
         return (1 - self.alpha) * self.prev_state * fb_str + self.alpha * in_val
 
     def forward(self, signal, fb_str: float = 1):
-        self.prev_state = self.leaky_integrator((self.eta * signal * self.node_mask), fb_str)
+        self.prev_state = self.leaky_integrator((self.eta * signal), fb_str)
         return self.prev_state
 
     @property
