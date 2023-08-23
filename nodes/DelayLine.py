@@ -3,15 +3,16 @@ import numpy as np
 
 
 class DelayLine(Node):
-    def __init__(self, tau: int = 3, fb_str: float = 0.5, eta: float = 1):
+    def __init__(self, signal_len, tau: int = 3, fb_str: float = 0.5, eta: float = 1):
         self.name = 'DelayLine'
         self._tau, self._fb_str, self.eta = tau, fb_str, eta
-        self.mask = torch.rand(tau)
         self._wrapped = None
+        self.count = 0
 
     def forward(self, signal: torch.Tensor, fb_str: float = 1) -> torch.Tensor:
         if self.wrapped is not None:
-            out_list = [(self.wrapped.forward(signal * self.eta * self.mask[theta], self.fb_str))
+            mask = torch.rand(self.tau)
+            out_list = [(self.wrapped.forward(signal * mask[theta], self.fb_str))
                         for theta in range(self.tau)]
             return torch.sum(torch.stack(out_list), dim=0)
         else:
@@ -32,7 +33,7 @@ class DelayLine(Node):
     @tau.setter
     def tau(self, tau):
         self._tau = tau
-        self.mask = torch.rand(tau)
+        # self.mask = torch.rand(tau)
 
     @property
     def wrapped(self):
