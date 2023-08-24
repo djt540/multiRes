@@ -10,6 +10,7 @@ from nodes.Model import *
 from util.ParamOptim import ParamOpt
 from scipy import optimize
 from nodes.value_tester import BlankLine
+from nodes.ResArray import ResArray
 
 
 def error_average(model_desc, num_tests):
@@ -74,37 +75,28 @@ def _tester(model_desc):
     errors = []
     for i in range(1):
         mod = Model(model_desc)
-        res = mod.last_node
-        po = ParamOpt(mod, sig)
-
-        res.reset_states()
-
-        opt_params = [ParamOpt.Param(instance=res, name='alpha'),
-                      ParamOpt.Param(instance=res, name='eta')
-                      ]
+        # po = ParamOpt(mod, sig)
 
         narma = mod.NARMAGen(sig, 10)
         _, y_train, y_valid, y_test = torch.split(narma, [250, 3750, 500, 500])
 
-        po.anneal(opt_params)
+        # po.anneal(opt_params)
 
         states = mod.run(sig)
         _, x_train, x_valid, x_test = torch.split(states, [250, 3750, 500, 500])
-
         w_out = mod.ridge_regression(x_train, y_train)
         pred = x_test @ w_out
         print(mod.NRMSE(pred, y_test))
         errors.append(torch.sum((pred - y_test) ** 2) / len(y_test))
 
 
-
 if __name__ == "__main__":
-    nnodes = 100
+    nnodes = 15
     # fb_tau_tester((DelayLine(tau=15), Reservoir(nnodes)))
     # _tester((Rotor(nnodes), Reservoir(nnodes)))
-    res = Reservoir(nnodes)
-    _tester((BlankLine(nnodes, verbose=False), res))
-    res.reset_states()
-    _tester((Rotor(nnodes), res))
-    res.reset_states()
-    _tester((DelayLine(tau=20, fb_str=0.4, eta=0.2), res))
+    res = [Reservoir(nnodes) for i in range(3)]
+    # _tester((BlankLine(nnodes, verbose=False), res[1]))
+    # res[1].reset_states()
+    _tester((Rotor(3), ResArray(res)))
+    # res[1].reset_states()
+    # _tester((DelayLine(tau=20, fb_str=0.4, eta=0.2), res[1]))

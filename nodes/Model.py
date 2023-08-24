@@ -18,6 +18,7 @@ class Model:
 
         self.first_node = self.node_list[0]
         self.last_node = self.node_list[self.model_len - 1]
+        self.num_nodes = self.last_node.num_nodes
         self.node_names = []
 
         for n in range(len(node_list) - 1):
@@ -26,7 +27,7 @@ class Model:
         self.node_names.append('Res')
 
     def run(self, signal: torch.Tensor) -> torch.Tensor:
-        output = torch.zeros((len(signal), self.last_node.num_nodes))
+        output = torch.zeros((len(signal), self.num_nodes))
         for ts in range(len(signal)):
             output[ts, :] = self.first_node.forward(signal[ts])
         return output
