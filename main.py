@@ -77,11 +77,11 @@ def _tester(model_desc):
         mod = Model(model_desc)
         po = ParamOpt(mod, sig)
 
-        res = mod.last_node.nodes
-
         narma = mod.NARMAGen(sig)
         wash, y_train, y_valid, y_test = torch.split(narma, [250, 3750, 500, 500], dim=0)
 
+        # for multi ESN
+        res = mod.last_node.nodes
         opt_params = [ParamOpt.Param(instance=res[0], name='alpha'),
                       ParamOpt.Param(instance=res[0], name='eta'),
                       ParamOpt.Param(instance=res[1], name='alpha'),
@@ -93,6 +93,12 @@ def _tester(model_desc):
                       ParamOpt.Param(instance=res[4], name='alpha'),
                       ParamOpt.Param(instance=res[4], name='eta'),
                       ]
+
+        # for just ESN
+        # res = mod.last_node
+        # opt_params = [ParamOpt.Param(instance=res, name='alpha'),
+        #               ParamOpt.Param(instance=res, name='eta'),
+        #               ]
 
         po.anneal(opt_params)
 
@@ -107,11 +113,15 @@ def _tester(model_desc):
 
 if __name__ == "__main__":
     nnodes = 100
-    # fb_tau_tester((DelayLine(tau=15), Reservoir(nnodes)))
-    # _tester((Rotor(nnodes), Reservoir(nnodes)))
     res = [Reservoir(nnodes) for i in range(5)]
-    # _tester((BlankLine(nnodes, verbose=False), res[1]))
-    # res[1].reset_states()
-    _tester((InputMask(500), DelayLine(tau=20, fb_str=0.4, eta=0.2), Rotor(5, 100), NodeArray(res)))
-    # res[1].reset_states()
-    # _tester((DelayLine(tau=20, fb_str=0.4, eta=0.2), res[1]))
+    total_nodes = nnodes * len(res)
+
+    # This is delayline wrapping rotor
+    # _tester((InputMask(total_nodes), DelayLine(tau=20, fb_str=0.4, eta=0.2, Rotor(5, 100), NodeArray(res)))
+
+    # This is just rotor
+    _tester((InputMask(total_nodes), Rotor(5, 100), NodeArray(res)))
+
+    # This is just single ESN however will need testing modified to remove excess params in optimiser.
+    _tester((InputMask(total_nodes), Reservoir(nnodes)))
+
