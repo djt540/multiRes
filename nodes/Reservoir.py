@@ -10,7 +10,6 @@ class Reservoir(Node):
 
         self.prev_state = torch.zeros(num_nodes)
 
-        self.w_in = torch.rand((1, num_nodes))
         self.w_res = torch.rand((num_nodes, num_nodes))
 
         self.w_res[self.w_res < sparsity] = 0
@@ -22,7 +21,7 @@ class Reservoir(Node):
 
     def forward(self, signal) -> torch.Tensor:
         self.prev_state = (1 - self.alpha) * self.prev_state + self.alpha * torch.tanh(
-            self.rho * self.prev_state @ self.w_res + self.eta * self.w_in * signal)
+            self.rho * self.prev_state @ self.w_res + self.eta * signal)
         return self.prev_state
 
     # def leaky_integrator(self, in_val):

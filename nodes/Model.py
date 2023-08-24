@@ -12,7 +12,7 @@ class Node(ABC):
 class Model:
     def __init__(self, node_list: tuple):
         self.weights = None
-        self.gamma = 1e-6
+        self.gamma = 0.3
         self.node_list = node_list
         self.model_len = len(self.node_list)
 

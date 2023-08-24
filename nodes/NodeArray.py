@@ -13,5 +13,5 @@ class NodeArray(Node):
 
     def forward(self, signal) -> torch.Tensor:
         for i in range(len(self.nodes)):
-            self.prev_state[i] = self.nodes[i].forward(signal[i])
+            self.prev_state[i] = self.nodes[i].forward(signal[i*100:(i+1)*100])
         return torch.flatten(torch.cat(self.prev_state))
