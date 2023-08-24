@@ -75,12 +75,26 @@ def _tester(model_desc):
     errors = []
     for i in range(1):
         mod = Model(model_desc)
-        # po = ParamOpt(mod, sig)
+        po = ParamOpt(mod, sig)
+
+        res = mod.last_node.reservoirs
 
         narma = mod.NARMAGen(sig, 10)
         _, y_train, y_valid, y_test = torch.split(narma, [250, 3750, 500, 500])
 
-        # po.anneal(opt_params)
+        opt_params = [ParamOpt.Param(instance=res[0], name='alpha'),
+                      ParamOpt.Param(instance=res[0], name='eta'),
+                      ParamOpt.Param(instance=res[1], name='alpha'),
+                      ParamOpt.Param(instance=res[1], name='eta'),
+                      ParamOpt.Param(instance=res[2], name='alpha'),
+                      ParamOpt.Param(instance=res[2], name='eta'),
+                      ParamOpt.Param(instance=res[3], name='alpha'),
+                      ParamOpt.Param(instance=res[3], name='eta'),
+                      ParamOpt.Param(instance=res[4], name='alpha'),
+                      ParamOpt.Param(instance=res[4], name='eta'),
+                      ]
+
+        po.anneal(opt_params)
 
         states = mod.run(sig)
         _, x_train, x_valid, x_test = torch.split(states, [250, 3750, 500, 500])
@@ -91,12 +105,12 @@ def _tester(model_desc):
 
 
 if __name__ == "__main__":
-    nnodes = 15
+    nnodes = 100
     # fb_tau_tester((DelayLine(tau=15), Reservoir(nnodes)))
     # _tester((Rotor(nnodes), Reservoir(nnodes)))
-    res = [Reservoir(nnodes) for i in range(3)]
+    res = [Reservoir(nnodes) for i in range(5)]
     # _tester((BlankLine(nnodes, verbose=False), res[1]))
     # res[1].reset_states()
-    _tester((Rotor(3), ResArray(res)))
+    _tester((Rotor(5), ResArray(res)))
     # res[1].reset_states()
     # _tester((DelayLine(tau=20, fb_str=0.4, eta=0.2), res[1]))
