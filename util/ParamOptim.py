@@ -21,7 +21,7 @@ class ParamOpt:
     @signal.setter
     def signal(self, signal):
         self._signal = signal
-        self._narma = self.model.NARMAGen(self.signal, 10)
+        self._narma = self.model.NARMAGen(self.signal)
         _, self.y_train, self.y_valid, self.y_test = torch.split(self._narma, [250, 3750, 500, 500])
 
     def run(self):

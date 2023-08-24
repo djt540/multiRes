@@ -12,7 +12,7 @@ class Node(ABC):
 class Model:
     def __init__(self, node_list: tuple):
         self.weights = None
-        self.gamma = 0.3
+        self.gamma = 1e-6
         self.node_list = node_list
         self.model_len = len(self.node_list)
 
@@ -32,8 +32,7 @@ class Model:
             output[ts, :] = self.first_node.forward(signal[ts])
         return output
     
-    def simple_plot(self, testing, target):
-        prediction = testing @ self.weights
+    def simple_plot(self, prediction, target):
         plt.figure(figsize=(10, 5))
         plt.plot(prediction, label='Prediction')
         plt.plot(target, label='Target')
@@ -53,13 +52,13 @@ class Model:
         return self.weights
 
     @staticmethod
-    def NARMAGen(signal, N):
+    def NARMAGen(signal):
         ns = torch.zeros((len(signal), 1))
-        ns[0:N, 0] = signal[0:N]
-        for t in range(len(ns) - N):
-            t += N - 1
-            ns[t + 1, 0] = 0.3 * ns[t, 0] + 0.05 * ns[t, 0] * sum(ns[(t - (N - 1)):t, 0]) + 1.5 * signal[t] * \
-                signal[t - (N - 1)] + 0.1
+        ns[0:10, 0] = signal[0:10]
+        for t in range(len(ns) - 10):
+            t += 10 - 1
+            ns[t + 1, 0] = 0.3 * ns[t, 0] + 0.05 * ns[t, 0] * sum(ns[(t - (10 - 1)):t, 0]) + 1.5 * signal[t] * \
+                signal[t - (10 - 1)] + 0.1
         return ns
 
     @staticmethod
