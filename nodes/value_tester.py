@@ -1,7 +1,7 @@
 from nodes.Model import *
 from nodes.DelayLine import DelayLine
 from nodes.Rotor import Rotor
-from nodes.Reservoir import Reservoir
+from nodes.Reservoir import Reservoir, InputMask
 
 # this file is a bit of a mess
 
@@ -17,21 +17,24 @@ class BlankLine(Node):
         self.wrapped = None
 
     def forward(self, signal):
-        output = self.wrapped.forward(signal)
-        return output
+        if self.wrapped is not None:
+            output = self.wrapped.forward(signal)
+            return output
+        else:
+            print(signal)
+            return signal
+
+
+# Rotor Mask Rotation Test
+def test_rotor():
+    sig = torch.flatten(torch.cat((torch.ones(100), torch.zeros(100), torch.ones(100),torch.ones(100), torch.ones(100))))
+    in_mask = InputMask(500)
+    in_mask.w_in = sig
+    mod = Model((in_mask, Rotor(5, 100), BlankLine(500)))
+    mod.run(sig)
 
 
 if __name__ == '__main__':
-    sig = torch.rand(5000)
-    model_test = Model((DelayLine(tau=120), BlankLine(2, verbose=False)))
+    test_rotor()
 
-    del_line = model_test.node_list[0]
-    del_line.eta = 0.5
-    del_line.fb_str = 0.5
-    del_line.mask = torch.rand(del_line.tau)
 
-    model_test = Model((DelayLine(tau=5, fb_str=0.5), Reservoir(5)))
-    # model_test = Model((Rotor(3), Reservoir(3)))
-
-    out = model_test.run(sig)
-    print(out)

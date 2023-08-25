@@ -6,7 +6,7 @@ class Rotor(Node):
         self.name = 'Rotor'
         self.rot_num = rot_num
         self.num_nodes = num_nodes
-        # self.mask = torch.randint(-1, 1, (rot_num, 1))
+        self.mask = torch.randint(-1, 1, (rot_num,))
         self.roll_count = 0
 
         self._wrapped = None

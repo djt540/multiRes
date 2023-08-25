@@ -119,11 +119,6 @@ if __name__ == "__main__":
     # _tester((InputMask(total_nodes), DelayLine(tau=20, fb_str=0.4, eta=0.2, Rotor(5, 100), NodeArray(res)))
     # res[0].reset_states()
 
-    # Masking then Rotating Signal
-    _tester((Rotor(5, 100), InputMask(total_nodes), NodeArray(res)))
-    for i in res:
-        i.reset_states()
-
     # Rotating Signal then Masking
     _tester((InputMask(total_nodes), Rotor(5, 100), NodeArray(res)))
     for i in res:
