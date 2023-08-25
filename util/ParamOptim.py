@@ -67,13 +67,13 @@ class ParamOpt:
     class Param:
         instance: object
         name: str
-        min: float = 0.3
-        max: float = 0.7
+        min: float = 0.2
+        max: float = 1
         step: float = 0.1
         cur_val: float = uniform(min, max)
         best_val: float = cur_val
 
-    def anneal(self, params_list: list[Param], iterations=12, initial_temp=20):
+    def anneal(self, params_list: list[Param], iterations=12, initial_temp=150):
         self.params_step(params_list)
         _, x_train, x_valid, x_test = self.split_results(self.signal)
         best_error = self.model.error_test(x_train, self.y_train, x_valid, self.y_valid)
@@ -100,6 +100,7 @@ class ParamOpt:
         for param in params_list:
             param.cur_val = param.best_val + uniform(-0.5, 0.5) * param.step
             setattr(param.instance, param.name, param.cur_val)
+            print(param.instance.leak)
 
     def split_results(self, signal, splits=None):
         if splits is None:

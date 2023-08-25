@@ -21,17 +21,6 @@ class BlankLine(Node):
         return output
 
 
-class InputMask(Node):
-    def __init__(self, num_nodes):
-        self.w_in = torch.rand(num_nodes)
-        self.name = 'Input Mask'
-
-        self.wrapped = None
-
-    def forward(self, signal) -> torch.Tensor:
-        return self.wrapped.forward(signal * self.w_in)
-
-
 if __name__ == '__main__':
     sig = torch.rand(5000)
     model_test = Model((DelayLine(tau=120), BlankLine(2, verbose=False)))
