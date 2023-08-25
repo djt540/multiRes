@@ -1,3 +1,5 @@
+import torch
+
 from nodes.Model import *
 
 
@@ -13,7 +15,7 @@ class InputMask(Node):
 
 
 class Reservoir(Node):
-    def __init__(self, num_nodes, sparsity=0.8, leak: float = 1, in_scale: float = 0.7, spec_r: float = 0.99):
+    def __init__(self, num_nodes, sparsity=0.9, leak: float = 0.9, in_scale: float = 0.1, spec_r: float = 0.99):
         self.name = 'Res'
 
         self.num_nodes = num_nodes
@@ -21,19 +23,27 @@ class Reservoir(Node):
 
         self.prev_state = torch.zeros(num_nodes)
 
-        self.w_res = torch.rand((num_nodes, num_nodes))
+        self.w_res = self._internal_weights_calc(sparsity)
 
-        self.w_res[self.w_res < sparsity] = 0
-        vals, vecs = torch.linalg.eig(self.w_res)
-        self.w_res = self.w_res / torch.abs(vals[0])
+    def _internal_weights_calc(self, sparsity):
+        weights = torch.rand((self.num_nodes, self.num_nodes))
+        weights[weights < sparsity] = 0
+        vals, vecs = torch.linalg.eig(weights)
+        max_eig = torch.max(torch.abs(vals[0]))
+        weights /= torch.abs(max_eig) / self.spec_r
+
+        return weights
 
     def reset_states(self):
-        self.prev_state = torch.zeros((1, self.num_nodes))
+        self.prev_state = torch.zeros(self.num_nodes)
 
     def forward(self, signal) -> torch.Tensor:
-        self.prev_state = (1 - self.leak) * self.prev_state + self.leak * torch.tanh(
-            self.spec_r * self.prev_state @ self.w_res + self.in_scale * signal)
+        leak_in = (1 - self._leak) * self.prev_state + self._leak
+        sig_in = self.prev_state @ self.w_res + self._in_scale * signal
+        self.prev_state = leak_in * torch.tanh(sig_in)
         return self.prev_state
+
+    # state_before_tanh = self._internal_weights.dot(previous_state.T) + self._input_weights.dot(current_input.T)
 
     # def leaky_integrator(self, in_val):
     #     return (1 - self.alpha) * self.prev_state + self.alpha * in_val

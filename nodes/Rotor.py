@@ -6,15 +6,15 @@ class Rotor(Node):
         self.name = 'Rotor'
         self.rot_num = rot_num
         self.num_nodes = num_nodes
-        self.w_in = torch.rand((1, num_nodes * rot_num))
-        self.mask = torch.randint(-1, 1, (rot_num, 1))
+        # self.mask = torch.randint(-1, 1, (rot_num, 1))
         self.roll_count = 0
 
         self._wrapped = None
 
     def forward(self, signal) -> torch.Tensor:
-        state = self.wrapped.forward(torch.roll(signal, self.roll_count * self.num_nodes))
-        output = torch.roll(state, -self.roll_count * self.num_nodes)
+        roll_amount = self.roll_count * self.num_nodes
+        state = self.wrapped.forward(torch.roll(signal, roll_amount))
+        output = torch.roll(state, -roll_amount)
         self.roll_count += 1
         return output
 

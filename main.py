@@ -117,10 +117,18 @@ if __name__ == "__main__":
 
     # This is delayline wrapping rotor
     # _tester((InputMask(total_nodes), DelayLine(tau=20, fb_str=0.4, eta=0.2, Rotor(5, 100), NodeArray(res)))
+    # res[0].reset_states()
 
-    # This is just rotor
-    # _tester((InputMask(total_nodes), Rotor(5, 100), NodeArray(res)))
+    # Masking then Rotating Signal
+    _tester((Rotor(5, 100), InputMask(total_nodes), NodeArray(res)))
+    for i in res:
+        i.reset_states()
+
+    # Rotating Signal then Masking
+    _tester((InputMask(total_nodes), Rotor(5, 100), NodeArray(res)))
+    for i in res:
+        i.reset_states()
 
     # This is just single ESN however will need testing modified to remove excess params in optimiser.
-    _tester((InputMask(nnodes), Reservoir(nnodes)))
+    _tester((InputMask(nnodes), res[0]))
 
