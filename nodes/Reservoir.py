@@ -15,7 +15,7 @@ class InputMask(Node):
 
 
 class Reservoir(Node):
-    def __init__(self, num_nodes, connectivity=0.9, leak: float = 1.0, in_scale: float = 0.4, spec_r: float = 0.75):
+    def __init__(self, num_nodes, connectivity=0.9, leak: float = 1.0, in_scale: float = 0.1, spec_r: float = 0.75):
         self.name = 'Res'
 
         self.num_nodes = num_nodes
