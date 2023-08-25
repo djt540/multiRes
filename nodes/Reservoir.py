@@ -1,12 +1,23 @@
 from nodes.Model import *
 
 
+class InputMask(Node):
+    def __init__(self, num_nodes):
+        self.w_in = torch.rand(num_nodes)
+        self.name = 'Input Mask'
+
+        self.wrapped = None
+
+    def forward(self, signal) -> torch.Tensor:
+        return self.wrapped.forward(signal * self.w_in)
+
+
 class Reservoir(Node):
-    def __init__(self, num_nodes, sparsity=0.8, alpha: float = 0.9, eta: float = 0.7, rho: float = 0.9):
+    def __init__(self, num_nodes, sparsity=0.8, leak: float = 1, in_scale: float = 0.7, spec_r: float = 0.99):
         self.name = 'Res'
 
         self.num_nodes = num_nodes
-        self._alpha, self._eta, self.rho = alpha, eta, rho
+        self._leak, self._in_scale, self.spec_r = leak, in_scale, spec_r
 
         self.prev_state = torch.zeros(num_nodes)
 
@@ -20,8 +31,8 @@ class Reservoir(Node):
         self.prev_state = torch.zeros((1, self.num_nodes))
 
     def forward(self, signal) -> torch.Tensor:
-        self.prev_state = (1 - self.alpha) * self.prev_state + self.alpha * torch.tanh(
-            self.rho * self.prev_state @ self.w_res + self.eta * signal)
+        self.prev_state = (1 - self.leak) * self.prev_state + self.leak * torch.tanh(
+            self.spec_r * self.prev_state @ self.w_res + self.in_scale * signal)
         return self.prev_state
 
     # def leaky_integrator(self, in_val):
@@ -32,20 +43,20 @@ class Reservoir(Node):
     #     return self.prev_state
 
     @property
-    def alpha(self):
-        return self._alpha
+    def leak(self):
+        return self._leak
 
-    @alpha.setter
-    def alpha(self, alpha):
-        self._alpha = alpha
+    @leak.setter
+    def leak(self, leak):
+        self._leak = leak
 
     @property
-    def eta(self):
-        return self._eta
+    def in_scale(self):
+        return self._in_scale
 
-    @eta.setter
-    def eta(self, eta):
-        self._eta = eta
+    @in_scale.setter
+    def in_scale(self, in_scale):
+        self._in_scale = in_scale
 
     def str(self):
-        return f'{self.alpha=} {self.eta=}'
+        return f'{self._leak=} {self._in_scale=}'

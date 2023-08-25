@@ -5,11 +5,10 @@ from tqdm import tqdm
 import pandas as pd
 from nodes.Rotor import Rotor
 from nodes.DelayLine import DelayLine
-from nodes.Reservoir import Reservoir
+from nodes.Reservoir import Reservoir, InputMask
 from nodes.Model import *
 from util.ParamOptim import ParamOpt
 from scipy import optimize
-from nodes.value_tester import InputMask
 from nodes.NodeArray import NodeArray
 
 
@@ -41,8 +40,8 @@ def fb_tau_tester(model_desc):
     mod = Model(model_desc)
     res = mod.last_node
 
-    opt_params = [ParamOpt.Param(instance=res, name='alpha'),
-                  ParamOpt.Param(instance=res, name='eta')]
+    opt_params = [ParamOpt.Param(instance=res, name='leak'),
+                  ParamOpt.Param(instance=res, name='in_scale')]
 
     po = ParamOpt(mod, sig)
 
@@ -75,32 +74,32 @@ def _tester(model_desc):
     errors = []
     for i in range(1):
         mod = Model(model_desc)
-        po = ParamOpt(mod, sig)
+        # po = ParamOpt(mod, sig)
 
         narma = mod.NARMAGen(sig)
         wash, y_train, y_valid, y_test = torch.split(narma, [250, 3750, 500, 500], dim=0)
 
         # for multi ESN
-        res = mod.last_node.nodes
-        opt_params = [ParamOpt.Param(instance=res[0], name='alpha'),
-                      ParamOpt.Param(instance=res[0], name='eta'),
-                      ParamOpt.Param(instance=res[1], name='alpha'),
-                      ParamOpt.Param(instance=res[1], name='eta'),
-                      ParamOpt.Param(instance=res[2], name='alpha'),
-                      ParamOpt.Param(instance=res[2], name='eta'),
-                      ParamOpt.Param(instance=res[3], name='alpha'),
-                      ParamOpt.Param(instance=res[3], name='eta'),
-                      ParamOpt.Param(instance=res[4], name='alpha'),
-                      ParamOpt.Param(instance=res[4], name='eta'),
-                      ]
+        # res = mod.last_node.nodes
+        # opt_params = [ParamOpt.Param(instance=res[0], name='_leak'),
+        #               ParamOpt.Param(instance=res[0], name='_in_scale'),
+        #               ParamOpt.Param(instance=res[1], name='_leak'),
+        #               ParamOpt.Param(instance=res[1], name='_in_scale'),
+        #               ParamOpt.Param(instance=res[2], name='_leak'),
+        #               ParamOpt.Param(instance=res[2], name='_in_scale'),
+        #               ParamOpt.Param(instance=res[3], name='_leak'),
+        #               ParamOpt.Param(instance=res[3], name='_in_scale'),
+        #               ParamOpt.Param(instance=res[4], name='_leak'),
+        #               ParamOpt.Param(instance=res[4], name='_in_scale'),
+        #               ]
 
         # for just ESN
         # res = mod.last_node
-        # opt_params = [ParamOpt.Param(instance=res, name='alpha'),
-        #               ParamOpt.Param(instance=res, name='eta'),
+        # opt_params = [ParamOpt.Param(instance=res, name='leak'),
+        #               ParamOpt.Param(instance=res, name='in_scale'),
         #               ]
 
-        po.anneal(opt_params)
+        # po.anneal(opt_params)
 
         states = mod.run(sig)
         wash, x_train, x_valid, x_test = torch.split(states, [250, 3750, 500, 500], dim=0)
@@ -120,8 +119,8 @@ if __name__ == "__main__":
     # _tester((InputMask(total_nodes), DelayLine(tau=20, fb_str=0.4, eta=0.2, Rotor(5, 100), NodeArray(res)))
 
     # This is just rotor
-    _tester((InputMask(total_nodes), Rotor(5, 100), NodeArray(res)))
+    # _tester((InputMask(total_nodes), Rotor(5, 100), NodeArray(res)))
 
     # This is just single ESN however will need testing modified to remove excess params in optimiser.
-    _tester((InputMask(total_nodes), Reservoir(nnodes)))
+    _tester((InputMask(nnodes), Reservoir(nnodes)))
 
