@@ -68,38 +68,39 @@ def fb_tau_tester(model_desc):
         print(error_mat)
 
 
-def _tester(model_desc):
+def _tester(model_desc, multiRes=False):
     sig = (torch.rand(5000) / 2)
 
     errors = []
     for i in range(1):
         mod = Model(model_desc)
-        # po = ParamOpt(mod, sig)
+        po = ParamOpt(mod, sig)
 
         narma = mod.NARMAGen(sig)
         wash, y_train, y_valid, y_test = torch.split(narma, [250, 3750, 500, 500], dim=0)
 
+        if multiRes:
         # for multi ESN
-        # res = mod.last_node.nodes
-        # opt_params = [ParamOpt.Param(instance=res[0], name='_leak'),
-        #               ParamOpt.Param(instance=res[0], name='_in_scale'),
-        #               ParamOpt.Param(instance=res[1], name='_leak'),
-        #               ParamOpt.Param(instance=res[1], name='_in_scale'),
-        #               ParamOpt.Param(instance=res[2], name='_leak'),
-        #               ParamOpt.Param(instance=res[2], name='_in_scale'),
-        #               ParamOpt.Param(instance=res[3], name='_leak'),
-        #               ParamOpt.Param(instance=res[3], name='_in_scale'),
-        #               ParamOpt.Param(instance=res[4], name='_leak'),
-        #               ParamOpt.Param(instance=res[4], name='_in_scale'),
-        #               ]
+            res = mod.last_node.nodes
+            opt_params = [ParamOpt.Param(instance=res[0], name='_leak'),
+                          ParamOpt.Param(instance=res[0], name='_in_scale'),
+                          ParamOpt.Param(instance=res[1], name='_leak'),
+                          ParamOpt.Param(instance=res[1], name='_in_scale'),
+                          ParamOpt.Param(instance=res[2], name='_leak'),
+                          ParamOpt.Param(instance=res[2], name='_in_scale'),
+                          ParamOpt.Param(instance=res[3], name='_leak'),
+                          ParamOpt.Param(instance=res[3], name='_in_scale'),
+                          ParamOpt.Param(instance=res[4], name='_leak'),
+                          ParamOpt.Param(instance=res[4], name='_in_scale'),
+                          ]
 
-        # for just ESN
-        # res = mod.last_node
-        # opt_params = [ParamOpt.Param(instance=res, name='leak'),
-        #               ParamOpt.Param(instance=res, name='in_scale'),
-        #               ]
+            # for just ESN
+            # res = mod.last_node
+            # opt_params = [ParamOpt.Param(instance=res, name='leak'),
+            #               ParamOpt.Param(instance=res, name='in_scale'),
+            #               ]
 
-        # po.anneal(opt_params)
+            po.anneal(opt_params)
 
         states = mod.run(sig)
         wash, x_train, x_valid, x_test = torch.split(states, [250, 3750, 500, 500], dim=0)
@@ -120,7 +121,7 @@ if __name__ == "__main__":
     # res[0].reset_states()
 
     # Rotating Signal then Masking
-    _tester((InputMask(total_nodes), Rotor(5, 100), NodeArray(res)))
+    _tester((InputMask(total_nodes), Rotor(5, 100), NodeArray(res)), multiRes=True)
     for i in res:
         i.reset_states()
 

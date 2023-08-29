@@ -15,8 +15,10 @@ class InputMask(Node):
 
 
 class Reservoir(Node):
-    def __init__(self, num_nodes, connectivity=0.9, leak: float = 1.0, in_scale: float = 0.1, spec_r: float = 0.75):
+    def __init__(self, num_nodes, connectivity=0.1, leak: float = 0.85, in_scale: float = 0.25, spec_r: float = 0.85):
         self.name = 'Res'
+        # here for deep ESN
+        self.wrapped = None
 
         self.num_nodes = num_nodes
         self._leak, self._in_scale, self.spec_r = leak, in_scale, spec_r
@@ -31,7 +33,6 @@ class Reservoir(Node):
         vals, vecs = torch.linalg.eig(weights)
         max_eig = torch.max(torch.abs(vals[0]))
         weights /= torch.abs(max_eig) / self.spec_r
-
         return weights
 
     def reset_states(self):

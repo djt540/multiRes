@@ -28,8 +28,8 @@ class Model:
 
     def run(self, signal: torch.Tensor) -> torch.Tensor:
         output = torch.zeros((len(signal), self.num_nodes))
-        for ts in range(len(signal)):
-            output[ts, :] = self.first_node.forward(signal[ts])
+        for ts in range(len(signal) - 1):
+            output[ts, :] = self.first_node.forward(signal[ts + 1])
         return output
     
     def simple_plot(self, prediction, target):
