@@ -69,7 +69,7 @@ def fb_tau_tester(model_desc):
 
 
 def _tester(model_desc, multiRes=False):
-    sig = (torch.rand(5000) / 2)
+    sig = (torch.rand(5250) / 2)
 
     errors = []
     for i in range(1):
@@ -77,7 +77,7 @@ def _tester(model_desc, multiRes=False):
         po = ParamOpt(mod, sig)
 
         narma = mod.NARMAGen(sig)
-        wash, y_train, y_valid, y_test = torch.split(narma, [250, 3750, 500, 500], dim=0)
+        wash, y_train, y_valid, y_test = torch.split(narma, [500, 3750, 500, 500], dim=0)
 
         if multiRes:
         # for multi ESN
@@ -103,28 +103,28 @@ def _tester(model_desc, multiRes=False):
             po.anneal(opt_params)
 
         states = mod.run(sig)
-        wash, x_train, x_valid, x_test = torch.split(states, [250, 3750, 500, 500], dim=0)
+        wash, x_train, x_valid, x_test = torch.split(states, [500, 3750, 500, 500], dim=0)
         w_out = mod.ridge_regression(x_train, y_train)
         pred = x_valid @ w_out
         print(mod.NRMSE(pred, y_valid))
         mod.simple_plot(pred, y_valid)
-        errors.append(torch.sum((pred - y_test) ** 2) / len(y_test))
 
 
 if __name__ == "__main__":
-    nnodes = 100
-    res = [Reservoir(nnodes) for i in range(5)]
+    nnodes = 400
+    res = [Reservoir(nnodes) for i in range(10)]
     total_nodes = nnodes * len(res)
-
-    # This is delayline wrapping rotor
-    # _tester((InputMask(total_nodes), DelayLine(tau=20, fb_str=0.4, eta=0.2, Rotor(5, 100), NodeArray(res)))
-    # res[0].reset_states()
 
     # Rotating Signal then Masking
     _tester((InputMask(total_nodes), Rotor(5, 100), NodeArray(res)), multiRes=True)
     for i in res:
         i.reset_states()
 
-    # This is just single ESN however will need testing modified to remove excess params in optimiser.
+    # This is delayline wrapping rotor
+    _tester((InputMask(total_nodes), DelayLine(tau=20, fb_str=0.4, eta=0.2), Rotor(5, 100), NodeArray(res)))
+    for i in res:
+        i.reset_states()
+
+    # This is just single ESN - unfortunately using optimParams for the previous model
     _tester((InputMask(nnodes), res[0]))
 

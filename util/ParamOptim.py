@@ -22,7 +22,7 @@ class ParamOpt:
     def signal(self, signal):
         self._signal = signal
         self._narma = self.model.NARMAGen(self.signal)
-        _, self.y_train, self.y_valid, self.y_test = torch.split(self._narma, [250, 3750, 500, 500])
+        _, self.y_train, self.y_valid, self.y_test = torch.split(self._narma, [500, 3750, 500, 500])
 
     def run(self):
         best_alpha = 0
@@ -35,7 +35,7 @@ class ParamOpt:
                 self.model.last_node.eta = eta
 
                 states = self.model.run(self.signal)  # need to pass alpha and eta to reservoir
-                _, x_train, x_valid, x_test = torch.split(states, [250, 3750, 500, 500])
+                _, x_train, x_valid, x_test = torch.split(states, [500, 3750, 500, 500])
 
                 gammas = torch.logspace(-9, -3, 7)
                 best_gamma = 0
@@ -108,7 +108,7 @@ class ParamOpt:
 
     def split_results(self, signal, splits=None):
         if splits is None:
-            splits = [250, 3750, 500, 500]
+            splits = [500, 3750, 500, 500]
         if sum(splits) == len(signal):
             state = self.model.run(signal)
             return torch.split(state, splits)
