@@ -3,6 +3,7 @@ from random import random, uniform
 from nodes.Model import *
 from dataclasses import dataclass
 
+
 class ParamOpt:
     def __init__(self, model: Model, signal):
         self._signal = None
@@ -24,7 +25,7 @@ class ParamOpt:
         self._narma = self.model.NARMAGen(self.signal)
         _, self.y_train, self.y_valid, self.y_test = torch.split(self._narma, [500, 3750, 500, 500])
 
-    def run(self):
+    def grid_search(self):
         best_alpha = 0
         best_eta = 0
         best_err = 1
@@ -67,9 +68,9 @@ class ParamOpt:
     class Param:
         instance: object
         name: str
-        min: float = 0.6
+        min: float = 0.5
         max: float = 0.9
-        step: float = 0.05
+        step: float = 0.1
         cur_val: float = uniform(min, max)
         best_val: float = cur_val
 

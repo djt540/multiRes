@@ -15,7 +15,7 @@ class InputMask(Node):
 
 
 class Reservoir(Node):
-    def __init__(self, num_nodes, connectivity=0.1, leak: float = 0.85, in_scale: float = 0.25, spec_r: float = 0.85):
+    def __init__(self, num_nodes, connectivity=0.25, leak: float = 0.85, in_scale: float = 0.25, spec_r: float = 0.8):
         self.name = 'Res'
         # here for deep ESN
         self.wrapped = None

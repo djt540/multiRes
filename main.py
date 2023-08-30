@@ -80,7 +80,7 @@ def _tester(model_desc, multiRes=False):
         wash, y_train, y_valid, y_test = torch.split(narma, [500, 3750, 500, 500], dim=0)
 
         if multiRes:
-        # for multi ESN
+            # for multi ESN
             res = mod.last_node.nodes
             opt_params = [ParamOpt.Param(instance=res[0], name='_leak'),
                           ParamOpt.Param(instance=res[0], name='_in_scale'),
@@ -94,7 +94,7 @@ def _tester(model_desc, multiRes=False):
                           ParamOpt.Param(instance=res[4], name='_in_scale'),
                           ]
 
-            # for just ESN
+            # for just one res
             # res = mod.last_node
             # opt_params = [ParamOpt.Param(instance=res, name='leak'),
             #               ParamOpt.Param(instance=res, name='in_scale'),
@@ -105,26 +105,26 @@ def _tester(model_desc, multiRes=False):
         states = mod.run(sig)
         wash, x_train, x_valid, x_test = torch.split(states, [500, 3750, 500, 500], dim=0)
         w_out = mod.ridge_regression(x_train, y_train)
-        pred = x_valid @ w_out
-        print(mod.NRMSE(pred, y_valid))
-        mod.simple_plot(pred, y_valid)
+        pred = x_test @ w_out
+        print(mod.NRMSE(pred, y_test))
+        mod.simple_plot(pred, y_test)
 
 
 if __name__ == "__main__":
-    nnodes = 400
+    nnodes = 100
     res = [Reservoir(nnodes) for i in range(10)]
     total_nodes = nnodes * len(res)
 
     # Rotating Signal then Masking
-    _tester((InputMask(total_nodes), Rotor(5, 100), NodeArray(res)), multiRes=True)
-    for i in res:
-        i.reset_states()
+    # _tester((InputMask(total_nodes), Rotor(10, 100), NodeArray(res)), multiRes=True)
+    # for i in res:
+    #     i.reset_states()
 
-    # This is delayline wrapping rotor
-    _tester((InputMask(total_nodes), DelayLine(tau=20, fb_str=0.4, eta=0.2), Rotor(5, 100), NodeArray(res)))
-    for i in res:
-        i.reset_states()
+    # # This is delayline wrapping rotor
+    # _tester((InputMask(total_nodes), DelayLine(tau=20, fb_str=0.4, eta=0.2), Rotor(len(res), nnodes), NodeArray(res)),
+    #         multiRes=True)
+    # for i in res:
+    #     i.reset_states()
 
     # This is just single ESN - unfortunately using optimParams for the previous model
     _tester((InputMask(nnodes), res[0]))
-
