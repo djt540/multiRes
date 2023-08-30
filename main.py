@@ -8,7 +8,6 @@ from nodes.DelayLine import DelayLine
 from nodes.Reservoir import Reservoir, InputMask
 from nodes.Model import *
 from util.ParamOptim import ParamOpt
-from scipy import optimize
 from nodes.NodeArray import NodeArray
 
 
@@ -105,9 +104,9 @@ def _tester(model_desc, multiRes=False):
         states = mod.run(sig)
         wash, x_train, x_valid, x_test = torch.split(states, [500, 3750, 500, 500], dim=0)
         w_out = mod.ridge_regression(x_train, y_train)
-        pred = x_test @ w_out
-        print(mod.NRMSE(pred, y_test))
-        mod.simple_plot(pred, y_test)
+        pred = x_valid @ w_out
+        print(mod.NRMSE(pred, y_valid))
+        mod.simple_plot(pred, y_valid)
 
 
 if __name__ == "__main__":
@@ -116,9 +115,9 @@ if __name__ == "__main__":
     total_nodes = nnodes * len(res)
 
     # Rotating Signal then Masking
-    # _tester((InputMask(total_nodes), Rotor(10, 100), NodeArray(res)), multiRes=True)
-    # for i in res:
-    #     i.reset_states()
+    _tester((InputMask(total_nodes), Rotor(10, 100), NodeArray(res)), multiRes=True)
+    for i in res:
+        i.reset_states()
 
     # # This is delayline wrapping rotor
     # _tester((InputMask(total_nodes), DelayLine(tau=20, fb_str=0.4, eta=0.2), Rotor(len(res), nnodes), NodeArray(res)),
