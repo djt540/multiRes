@@ -74,7 +74,7 @@ class ParamOpt:
         cur_val: float = uniform(min, max)
         best_val: float = cur_val
 
-    def anneal(self, params_list: list[Param], iterations=10, initial_temp=25):
+    def anneal(self, params_list: list[Param], iterations=100, initial_temp=25):
         self.params_step(params_list)
         _, x_train, x_valid, x_test = self.split_results(self.signal)
         best_error = self.model.error_test(x_train, self.y_train, x_valid, self.y_valid)

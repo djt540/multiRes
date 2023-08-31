@@ -12,7 +12,7 @@ class Node(ABC):
 class Model:
     def __init__(self, node_list: tuple):
         self.weights = None
-        self.gamma = 0.3
+        self.gamma = 1e-6
         self.node_list = node_list
         self.model_len = len(self.node_list)
 
@@ -64,7 +64,7 @@ class Model:
     @staticmethod
     def NRMSE(pred, target):
         square_err = torch.sum((pred - target) ** 2)
-        var = torch.var(target)
+        var = torch.var(target, correction=0)
         return torch.sqrt((square_err / var) * (1 / len(target)))
 
     def error_test(self, train, train_target, compare, compare_target):

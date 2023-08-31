@@ -1,4 +1,5 @@
-from nodes.Model import *
+from nodes.Model import Node
+import torch
 
 
 class DelayLine(Node):
