@@ -1,13 +1,13 @@
 import pytest
 from util.ParamOptim import ParamOpt
-import torch
+import numpy as np
 from nodes.DelayLine import DelayLine
 from nodes.Model import *
 from nodes.Reservoir import Reservoir
 
 
 def basic_po():
-    sig = (torch.rand(5000) / 2)
+    sig = (np.rand(5000) / 2)
     res = Reservoir(10)
     print(res)
     mod = Model((DelayLine(tau=15), res))

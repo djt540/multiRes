@@ -1,8 +1,3 @@
-import multiprocessing
-from datetime import date
-import numpy as np
-from tqdm import tqdm
-import pandas as pd
 from nodes.Rotor import Rotor
 from nodes.DelayLine import DelayLine
 from nodes.Reservoir import Reservoir, InputMask
@@ -16,10 +11,10 @@ def error_average(model_desc, num_tests):
     template_mod = Model(model_desc)
 
     for x in range(num_tests):
-        sig = (torch.rand(5000) / 2)
+        sig = np.random.rand(5250) / 2
         mod = Model(model_desc)
         po = ParamOpt(mod, sig)
-        errors.append(po.run())
+        errors.append(po.grid_search())
 
     # with open('test-results.txt', 'a') as f:
     #     for error in errors:
@@ -31,7 +26,7 @@ def error_average(model_desc, num_tests):
 
 
 def fb_tau_tester(model_desc):
-    sig = torch.rand(5000) / 2
+    sig = np.rand(5000) / 2
 
     test_size = 5
     error_mat = np.ndarray((test_size, test_size))
@@ -45,7 +40,7 @@ def fb_tau_tester(model_desc):
     po = ParamOpt(mod, sig)
 
     narma = mod.NARMAGen(sig)
-    _, y_train, y_valid, y_test = torch.split(narma, [250, 3750, 500, 500])
+    _, y_train, y_valid, y_test = np.split(narma, [250, 3750, 500, 500])
 
     # sweep tau and fb
     for tm in range(test_size):
@@ -56,7 +51,7 @@ def fb_tau_tester(model_desc):
             res.fb_str = 0.1 + (fb / test_size)
             po.anneal(opt_params)
             states = mod.run(sig)
-            _, x_train, x_valid, x_test = torch.split(states, [250, 3750, 500, 500])
+            _, x_train, x_valid, x_test = np.split(states, [250, 3750, 500, 500])
 
             w_out = mod.ridge_regression(x_train, y_train)
             pred = x_test @ w_out
@@ -68,7 +63,8 @@ def fb_tau_tester(model_desc):
 
 
 def _tester(model_desc, multiRes=False):
-    sig = (torch.rand(5250) / 2)
+    np.random.seed(seed=1)
+    sig = (np.random.rand(5250) / 2)
 
     errors = []
     for i in range(1):
@@ -76,33 +72,39 @@ def _tester(model_desc, multiRes=False):
         po = ParamOpt(mod, sig)
 
         narma = mod.NARMAGen(sig)
-        wash, y_train, y_valid, y_test = torch.split(narma, [500, 3750, 500, 500], dim=0)
+        wash, y_train, y_valid, y_test = np.split(narma, [500, 4250, 4750])
 
         if multiRes:
             # for multi ESN
             res = mod.last_node.nodes
-            opt_params = [ParamOpt.Param(instance=res[0], name='_leak'),
-                          ParamOpt.Param(instance=res[0], name='_in_scale'),
-                          ParamOpt.Param(instance=res[1], name='_leak'),
-                          ParamOpt.Param(instance=res[1], name='_in_scale'),
-                          ParamOpt.Param(instance=res[2], name='_leak'),
-                          ParamOpt.Param(instance=res[2], name='_in_scale'),
-                          ParamOpt.Param(instance=res[3], name='_leak'),
-                          ParamOpt.Param(instance=res[3], name='_in_scale'),
-                          ParamOpt.Param(instance=res[4], name='_leak'),
-                          ParamOpt.Param(instance=res[4], name='_in_scale'),
+            opt_params = [ParamOpt.Param(instance=res[0], name='_leak', min=0.6),
+                          ParamOpt.Param(instance=res[0], name='_in_scale', min=0.05),
+                          ParamOpt.Param(instance=res[1], name='_leak', min=0.6),
+                          ParamOpt.Param(instance=res[1], name='_in_scale', min=0.05),
+                          ParamOpt.Param(instance=res[2], name='_leak', min=0.6),
+                          ParamOpt.Param(instance=res[2], name='_in_scale', min=0.05),
+                          ParamOpt.Param(instance=res[3], name='_leak', min=0.6),
+                          ParamOpt.Param(instance=res[3], name='_in_scale', min=0.05),
+                          ParamOpt.Param(instance=res[4], name='_leak', min=0.6),
+                          ParamOpt.Param(instance=res[4], name='_in_scale', min=0.05),
                           ]
-
-            # for just one res
-            # res = mod.last_node
-            # opt_params = [ParamOpt.Param(instance=res, name='leak'),
-            #               ParamOpt.Param(instance=res, name='in_scale'),
-            #               ]
-
             po.anneal(opt_params)
 
+        # # for just one res
+        # res = mod.last_node
+        # del_line = mod.node_list[1]
+        # opt_params = [ParamOpt.Param(instance=res, name='leak', min=0.6),
+        #               ParamOpt.Param(instance=res, name='in_scale', min=0.05),
+        #               ParamOpt.Param(instance=del_line, name='fb_str', min=0.5),
+        #               ParamOpt.Param(instance=del_line, name='eta', min=0.1),
+        #               ]
+        #
+        # po.anneal(opt_params)
+        #
+        # print(res)
+        # res.reset_states()
         states = mod.run(sig)
-        wash, x_train, x_valid, x_test = torch.split(states, [500, 3750, 500, 500], dim=0)
+        wash, x_train, x_valid, x_test = np.split(states, [500, 4250, 4750])
         w_out = mod.ridge_regression(x_train, y_train)
         pred = x_valid @ w_out
         print(mod.NRMSE(pred, y_valid))
@@ -110,18 +112,26 @@ def _tester(model_desc, multiRes=False):
 
 
 if __name__ == "__main__":
-    nnodes = 100
+    nnodes = 400
     res = [Reservoir(nnodes) for i in range(10)]
     total_nodes = nnodes * len(res)
 
-    # Rotating Signal then Masking
-    _tester((InputMask(total_nodes), Rotor(10, 100), NodeArray(res)), multiRes=True)
+    # # Rotating Signal then Masking
+    _tester((InputMask(total_nodes), Rotor(len(res), total_nodes), NodeArray(res)), multiRes=True)
     for i in res:
         i.reset_states()
 
-    # # This is delayline wrapping rotor
-    # _tester((InputMask(total_nodes), DelayLine(tau=20, fb_str=0.4, eta=0.2), Rotor(len(res), nnodes), NodeArray(res)),
+    # _tester((InputMask(total_nodes), Rotor(len(res), total_nodes), DelayLine(tau=80, fb_str=0.4, eta=0.2), NodeArray(res)),
     #         multiRes=True)
+
+    # This is delayline wrapping rotor
+    # _tester((InputMask(total_nodes), DelayLine(tau=80, fb_str=0.4, eta=0.2), Rotor(len(res), total_nodes), NodeArray(res)),
+    #         multiRes=True)
+    # for i in res:
+    #     i.reset_states()
+
+    # delay line
+    # _tester((InputMask(nnodes), DelayLine(tau=2, fb_str=0.5, eta=0.2), res[0]))
     # for i in res:
     #     i.reset_states()
 

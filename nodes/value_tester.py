@@ -12,7 +12,7 @@ class BlankLine(Node):
 
         self.verbose = verbose
         self.num_nodes = num_nodes
-        self.prev_state = torch.zeros((1, num_nodes))
+        self.prev_state = np.zeros((1, num_nodes))
 
         self.wrapped = None
 
@@ -27,7 +27,7 @@ class BlankLine(Node):
 
 # Rotor Mask Rotation Test
 def test_rotor():
-    sig = torch.flatten(torch.cat((torch.ones(100), torch.zeros(100), torch.ones(100),torch.ones(100), torch.ones(100))))
+    sig = np.flatten(np.cat((np.ones(100), np.zeros(100), np.ones(100),np.ones(100), np.ones(100))))
     in_mask = InputMask(500)
     in_mask.w_in = sig
     mod = Model((in_mask, Rotor(5, 100), BlankLine(500)))
