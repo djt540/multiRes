@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 
+"""A small script made to produce heatmaps from an external file.
+"""
+
 if __name__ == "__main__":
     data = np.loadtxt('test-results.csv', delimiter=',')
 

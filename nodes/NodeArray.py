@@ -48,5 +48,7 @@ class NodeArray(Node):
         np.ndarray
             Output states of all the objects concatenated together.
         """
+        # I am sure this could be made parallelised using the multiprocessing module or similar,
+        # however I am unsure I could do that easily.
         output = [self.nodes[i].forward(signal[i*self.obj_nodes:(i+1)*self.obj_nodes]) for i in range(len(self.nodes))]
         return np.concatenate(output).ravel()

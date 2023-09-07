@@ -19,8 +19,11 @@ class InputMask(Node):
         Node that the forward function passes the signal to.
     """
 
-    def __init__(self, num_nodes):
-        self.w_in = 2 * (np.random.randint(0, 2, num_nodes) - 0.5)
+    def __init__(self, num_nodes, connectivity: float = 0.5):
+        np.random.seed(seed=1)
+        self.w_in = np.random.rand(num_nodes,)
+        self.w_in[self.w_in < connectivity] = 0
+        self.w_in -= 0.5
         self.name = 'Input Mask'
 
         self._wrapped = None
@@ -88,6 +91,7 @@ class Reservoir(Node):
 
     def __init__(self, num_nodes: int, connectivity: float = 0.1, leak: float = 0.75, in_scale: float = 1,
                  spec_r: float = 0.95):
+        np.random.seed(seed=1)
         self.name = 'Res'
         self.wrapped = None
 
@@ -98,7 +102,6 @@ class Reservoir(Node):
         self.w_res = self._internal_weights_calc(connectivity)
 
     def _internal_weights_calc(self, connectivity):
-        np.random.seed(seed=1)
         weights = np.random.rand(self.num_nodes, self.num_nodes)
         weights[weights < connectivity] = 0
         vals, vecs = np.linalg.eig(weights)

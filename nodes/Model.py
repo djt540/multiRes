@@ -1,8 +1,6 @@
 import numpy as np
 from abc import ABC, abstractmethod
 import matplotlib.pyplot as plt
-import DelayLine
-import Reservoir
 
 
 class Node(ABC):
@@ -29,6 +27,7 @@ class Node(ABC):
     Model : Model class - constructs and runs a model using Nodes
     DelayLine : A node subclass with wrapping functionality
     """
+
     @abstractmethod
     def forward(self, signal: np.ndarray) -> np.ndarray:
         """Abstract method for the Node classes forward function.
@@ -49,22 +48,102 @@ class Node(ABC):
 
 
 class Model:
-    def __init__(self, node_list: tuple):
-        self.weights = None
+    """The Model class handles constructing and running models based on a list of nodes.
+
+    The model class will run through the list of nodes and string their 'wrapped' parameter
+    allowing their forward functions to chain together into a completed system.
+
+    The run method will run the constructed model using a given signal in, storing and returning
+    the output states (stored as states in the model object). These states are later used
+    for ridge regression learning for the model.
+
+    NARMA is the test I was using for all the models I created - so there is a NARMA
+    function inside the model class, however this should really be in its own set of
+    utility files along with the error calculations and plotting functions.
+
+    Error calculation here means normalised root-mean-square error, as seen in the following
+    formula:
+    .. math::
+        \sqrt{\frac{1}{M}\frac{\sum_{k=1}^{M}(\hat{y_k}-y_k)^2}{\sigma ^2(y_k)}}
+
+    found at in the supplementary information from: (https://doi.org/10.1038/ncomms1476)
+
+
+
+
+
+    Parameters
+    ----------
+    node_list : tuple[Node]
+        List of nodes to be made into a model. The first node in the tuple will be the first
+        node to receive the signal, with the last one receiving the signal last.
+
+    Attributes
+    ----------
+    states : np.ndarray
+        Output of the model. Used for Ridge Regression.
+    gamma : float
+        Parameter used in ridge regression.
+    node_list : tuple[Node]
+        List of nodes in the model, in order.
+    model_len : int
+        Number of node objects in the model (however this currently doesnt add the number of nodes
+        hidden inside a NodeArray).
+    first_node : Node
+        First node in the model.
+    last_node : Node
+        Last node in the model.
+    num_nodes : int
+        Number of nodes in the model (size of all spilt signals added together)
+        e.g. a model with 3 ESN's each 100 nodes in size will have a num nodes of 300,
+        a model with 1 ESN with 100 nodes will have a num_nodes of 100.
+    node_names : list[str]
+        List of the nodes names, these are all set in the node classes init and
+        required to create a model.
+
+    Raises
+    ------
+    IndexError
+        If there are not enough nodes in the list to create a model (minimum 2 nodes).
+    AttributeError
+        If the last node doesnt have a num_nodes attribute, e.g. a delay line is the final node.
+    AttributeError
+        If not all the nodes in the list have a name.
+
+    See Also
+    --------
+    Node : Node class required to form a model.
+    """
+    def __init__(self, node_list: tuple[Node]):
+        self.states = None
         self.gamma = 1e-6
         self.node_list = node_list
         self.model_len = len(self.node_list)
 
-        self.first_node = self.node_list[0]
-        self.last_node = self.node_list[self.model_len - 1]
-        self.num_nodes = self.last_node.num_nodes
-        self.node_names = []
+        try:
+            self.first_node = self.node_list[0]
+            self.last_node = self.node_list[self.model_len - 1]
+        except IndexError:
+            print("Not enough nodes in the list")
+            raise
+        try:
+            self.num_nodes = self.last_node.num_nodes
+        except AttributeError:
+            print("The last node does not have any neurons/num_nodes empty")
+            raise
+        try:
+            self.node_names = [node.name for node in node_list]
+        except AttributeError:
+            print("Not all nodes in the model have a name, check your subclass")
+            raise
 
         for n in range(len(node_list) - 1):
             if hasattr(node_list[n], 'wrapped'):
                 node_list[n].wrapped = node_list[n + 1]
-            self.node_names.append(node_list[n].name)
-        self.node_names.append(self.last_node.name)
+
+
+        # self.node_names.append(node_list[n].name)
+        # self.node_names.append(self.last_node.name)
 
     def run(self, signal: np.ndarray) -> np.ndarray:
         output = np.zeros((len(signal), self.num_nodes))
@@ -88,8 +167,8 @@ class Model:
         mat_target = states.T @ target
         mat_states = states.T @ states
         # Perform ridge regression
-        self.weights = np.linalg.pinv(mat_states + self.gamma * np.eye(len(mat_states))) @ mat_target
-        return self.weights
+        self.states = np.linalg.pinv(mat_states + self.gamma * np.eye(len(mat_states))) @ mat_target
+        return self.states
 
     @staticmethod
     def NARMAGen(signal):

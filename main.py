@@ -113,27 +113,32 @@ def _tester(model_desc, multiRes=False):
 
 if __name__ == "__main__":
     nnodes = 400
-    res = [Reservoir(nnodes) for i in range(10)]
-    total_nodes = nnodes * len(res)
+    res_num = 10
+    res = [Reservoir(nnodes) for i in range(res_num)]
+    total_nodes = nnodes * res_num
 
-    # # Rotating Signal then Masking
-    _tester((InputMask(total_nodes), Rotor(len(res), total_nodes), NodeArray(res)), multiRes=True)
+    # # # Rotating Signal then Masking
+    _tester((InputMask(total_nodes), Rotor(res_num, total_nodes), NodeArray(res)))
     for i in res:
         i.reset_states()
 
-    # _tester((InputMask(total_nodes), Rotor(len(res), total_nodes), DelayLine(tau=80, fb_str=0.4, eta=0.2), NodeArray(res)),
-    #         multiRes=True)
+    # Rotor Wrapping Delay Line
+    # _tester((Rotor(res_num, total_nodes), DelayLine(tau=80, fb_str=0.5), InputMask(total_nodes), NodeArray(res)))
+
+    # Delay Line wrapping Rotor
+    # _tester((DelayLine(tau=20, fb_str=0.4), InputMask(total_nodes), Rotor(res_num, total_nodes), NodeArray(res)))
+    # for i in res:
+    #     i.reset_states()
 
     # This is delayline wrapping rotor
-    # _tester((InputMask(total_nodes), DelayLine(tau=80, fb_str=0.4, eta=0.2), Rotor(len(res), total_nodes), NodeArray(res)),
+    # _tester((DelayLine(tau=80, fb_str=0.4, eta=0.2), Rotor(len(res), total_nodes), NodeArray(res)),
     #         multiRes=True)
     # for i in res:
     #     i.reset_states()
 
     # delay line
-    # _tester((InputMask(nnodes), DelayLine(tau=2, fb_str=0.5, eta=0.2), res[0]))
-    # for i in res:
-    #     i.reset_states()
+    _tester((DelayLine(tau=84, fb_str=0.5), InputMask(nnodes), res[0]))
+    res[0].reset_states()
 
-    # This is just single ESN - unfortunately using optimParams for the previous model
+    # # This is just single ESN - unfortunately using optimParams for the previous model
     _tester((InputMask(nnodes), res[0]))

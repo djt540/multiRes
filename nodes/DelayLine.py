@@ -19,16 +19,19 @@ class DelayLine(Node):
     Attributes
     ----------
     _mask : np.ndarray
-        Mask the size of the virtual nodes applied to the signal in the forward function
+        Mask the size of the virtual nodes applied to the signal in the forward function.
+
+        This is not the mask used in the paper, output is highly dependent on the mask,
+        however this is the best mask I could find for this task.
     _wrapped : Node|None
         Node that the forward function passes the signal to.
     _v_states : np.ndarray
         Internal states of the virtual nodes, only contains one timestep before overwritten
     """
 
-    def __init__(self, tau: int = 3, fb_str: float = 0.5, eta: float = 1):
+    def __init__(self, tau: int = 3, fb_str: float = 0.5, eta: float = 0.1):
         self.name = 'DelayLine'
-        self._mask = (10 * (np.random.randint(0, 2, tau) + 1)) - 5
+        self._mask = 2 * (np.random.randint(0, 2, tau) - 0.5)
         self._tau, self._fb_str, self.eta = tau, fb_str, eta
         self._wrapped: Node | None = None
         self._v_states = [0] * self.tau
@@ -54,11 +57,12 @@ class DelayLine(Node):
         """
         if self.wrapped is not None:
             for theta in range(self.tau):
-                masked_value = (signal * self.eta * self._mask[theta])
-                old_state = (self._v_states[theta] * self.fb_str)
+                # Had to add 1 to eta and fb_str, unsure why.
+                masked_value = (signal * (1 + self.eta) * self._mask[theta])
+                old_state = (self._v_states[theta] * (1 + self.fb_str))
                 self._v_states[theta] = self.wrapped.forward(masked_value + old_state)
-            # return np.array(self._v_states).sum(axis=0) / self.tau
-            return self._v_states[self.tau-1]
+            return np.array(self._v_states).sum(axis=0)
+            # return self._v_states[self.tau-1] # Couldn't get this working as well
         else:
             raise Exception("Delay Line has nothing to wrap")
 
