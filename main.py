@@ -21,43 +21,37 @@ def error_average(model_desc, num_tests):
     #         f.write(f'{template_mod.node_list[1].fb_str}, {template_mod.node_list[1].tau}, {error}\n')
 
     avrg_error = sum(errors) / num_tests
-    with open('test-results.csv', 'a') as f:
+    with open('util/test-results.csv', 'a') as f:
         f.write(f'{template_mod.node_list[1].fb_str}, {template_mod.node_list[1].tau}, {avrg_error}\n')
 
 
 def fb_tau_tester(model_desc):
-    sig = np.rand(5000) / 2
-
-    test_size = 5
-    error_mat = np.ndarray((test_size, test_size))
+    sig = (np.random.rand(5250) / 2)
 
     mod = Model(model_desc)
     res = mod.last_node
 
-    opt_params = [ParamOpt.Param(instance=res, name='leak'),
-                  ParamOpt.Param(instance=res, name='in_scale')]
-
-    po = ParamOpt(mod, sig)
-
     narma = mod.NARMAGen(sig)
-    _, y_train, y_valid, y_test = np.split(narma, [250, 3750, 500, 500])
+    wash, y_train, y_valid, y_test = np.split(narma, [500, 4250, 4750])
+
+    test_size = 20
+    error_mat = np.ndarray((test_size, test_size))
 
     # sweep tau and fb
     for tm in range(test_size):
         # CHANGE THIS IF THE NODE CHANGES LOCATION IN THE MODEL
-        res.eta = 0.1 + (tm / test_size)
+        mod.first_node.fb_str = 0.1 + (tm / test_size)
         for fb in range(test_size):
             res.reset_states()
-            res.fb_str = 0.1 + (fb / test_size)
-            po.anneal(opt_params)
+            mod.first_node.eta = 0.1 + (fb / test_size)
             states = mod.run(sig)
-            _, x_train, x_valid, x_test = np.split(states, [250, 3750, 500, 500])
+            wash, x_train, x_valid, x_test = np.split(states, [500, 4250, 4750])
 
             w_out = mod.ridge_regression(x_train, y_train)
             pred = x_test @ w_out
             error_mat[tm][fb] = mod.NRMSE(pred, y_test)
     try:
-        np.savetxt('test-results.csv', error_mat, delimiter=",", fmt='%f')
+        np.savetxt('util/test-results.csv', error_mat, delimiter=",", fmt='%f')
     except FileNotFoundError:
         print(error_mat)
 
@@ -118,12 +112,12 @@ if __name__ == "__main__":
     total_nodes = nnodes * res_num
 
     # # # Rotating Signal then Masking
-    _tester((InputMask(total_nodes), Rotor(res_num, total_nodes), NodeArray(res)))
-    for i in res:
-        i.reset_states()
+    # _tester((InputMask(total_nodes), Rotor(res_num, total_nodes), NodeArray(res)))
+    # for i in res:
+    #     i.reset_states()
 
     # Rotor Wrapping Delay Line
-    # _tester((Rotor(res_num, total_nodes), DelayLine(tau=80, fb_str=0.5), InputMask(total_nodes), NodeArray(res)))
+    _tester((InputMask(total_nodes), Rotor(res_num, total_nodes), DelayLine(tau=18, fb_str=0.5), NodeArray(res)))
 
     # Delay Line wrapping Rotor
     # _tester((DelayLine(tau=20, fb_str=0.4), InputMask(total_nodes), Rotor(res_num, total_nodes), NodeArray(res)))
@@ -137,8 +131,10 @@ if __name__ == "__main__":
     #     i.reset_states()
 
     # delay line
-    _tester((DelayLine(tau=84, fb_str=0.5), InputMask(nnodes), res[0]))
-    res[0].reset_states()
-
+    # _tester((DelayLine(tau=84, fb_str=0.5), InputMask(nnodes), res[0]))
+    # res[0].reset_states()
+    #
     # # This is just single ESN - unfortunately using optimParams for the previous model
-    _tester((InputMask(nnodes), res[0]))
+    # _tester((InputMask(nnodes), res[0]))
+    #
+    # fb_tau_tester((DelayLine(tau=20, fb_str=0.5), InputMask(nnodes), res[0]))

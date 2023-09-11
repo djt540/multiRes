@@ -20,13 +20,25 @@ class InputMask(Node):
     """
 
     def __init__(self, num_nodes, connectivity: float = 0.5):
-        np.random.seed(seed=1)
-        self.w_in = np.random.rand(num_nodes,)
-        self.w_in[self.w_in < connectivity] = 0
-        self.w_in -= 0.5
         self.name = 'Input Mask'
-
         self._wrapped = None
+
+        weights = 3.5 * (np.random.randint(0, 2, num_nodes) - 0.5)
+        self.w_in = weights
+
+        # This works better for ESN
+        # weights = 2 * (np.random.rand(num_nodes,) - 0.5)
+        # weights[weights < -connectivity] = 0
+        # weights[weights > connectivity] = 0
+        # weights = (weights / np.max(np.abs(weights)))
+        # self.w_in = weights
+
+        # # This works better for delay line
+        # self.w_in = np.random.rand(num_nodes,)
+        # self.w_in[self.w_in < connectivity] = 0
+        # self.w_in -= 0.5
+
+        # print(weights)
 
     def forward(self, signal) -> np.ndarray:
         """
@@ -113,7 +125,7 @@ class Reservoir(Node):
         self.prev_state = np.zeros(self.num_nodes)
 
     def forward(self, signal) -> np.ndarray:
-        """Forward function of the reservoir
+        r"""Forward function of the reservoir.
             Following the following update equation:
             .. math::
                 x(n+1)= (1-leak) \cdot x_n + tanh(leak * x_n \times W_{res} + in \textunderscore scale * signal)

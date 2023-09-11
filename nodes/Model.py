@@ -1,6 +1,7 @@
 import numpy as np
 from abc import ABC, abstractmethod
 import matplotlib.pyplot as plt
+from typing import TypeVar, Type, Tuple
 
 
 class Node(ABC):
@@ -48,7 +49,7 @@ class Node(ABC):
 
 
 class Model:
-    """The Model class handles constructing and running models based on a list of nodes.
+    r"""The Model class handles constructing and running models based on a list of nodes.
 
     The model class will run through the list of nodes and string their 'wrapped' parameter
     allowing their forward functions to chain together into a completed system.
@@ -56,6 +57,9 @@ class Model:
     The run method will run the constructed model using a given signal in, storing and returning
     the output states (stored as states in the model object). These states are later used
     for ridge regression learning for the model.
+
+    Notes
+    _____
 
     NARMA is the test I was using for all the models I created - so there is a NARMA
     function inside the model class, however this should really be in its own set of
@@ -66,15 +70,14 @@ class Model:
     .. math::
         \sqrt{\frac{1}{M}\frac{\sum_{k=1}^{M}(\hat{y_k}-y_k)^2}{\sigma ^2(y_k)}}
 
-    found at in the supplementary information from: (https://doi.org/10.1038/ncomms1476)
+    found in the supplementary information from the single dynamical node paper [SDN]_
 
-
-
-
+    The error calc function call the ridge regression function as well based on the
+    states and target provided.
 
     Parameters
     ----------
-    node_list : tuple[Node]
+    node_list : tuple['Node', ...]
         List of nodes to be made into a model. The first node in the tuple will be the first
         node to receive the signal, with the last one receiving the signal last.
 
@@ -114,7 +117,7 @@ class Model:
     --------
     Node : Node class required to form a model.
     """
-    def __init__(self, node_list: tuple[Node]):
+    def __init__(self, node_list: tuple['Node', ...]):
         self.states = None
         self.gamma = 1e-6
         self.node_list = node_list
@@ -141,11 +144,33 @@ class Model:
             if hasattr(node_list[n], 'wrapped'):
                 node_list[n].wrapped = node_list[n + 1]
 
-
-        # self.node_names.append(node_list[n].name)
-        # self.node_names.append(self.last_node.name)
-
     def run(self, signal: np.ndarray) -> np.ndarray:
+        """Run function for the model.
+
+        This handles the run loop for the model, which is the length of the signal provided.
+        An output of the signals length and the depth of the number of total nodes[#num_nodes]_ in the
+        model is created. The output is the state of the model for each timestep.
+
+        Run simply passes the signal to the forward function of the first node in the
+        node_list and would need to be modified if a more complex model class was created[#fut]_.
+
+        .. rubric:: Footnotes
+
+        .. [#num_nodes] I know this is slightly confusing naming but here it means num_nodes as explained
+        in the model class documentation.
+
+        .. [#fut] For example if a Model class allowed for multiple inputs or outputs, however
+        this is beyond the scope of this project.
+
+        Parameters
+        ----------
+        signal: np.ndarray
+            Signal to run the model, for NARMA this will be an array of random noise.
+        Returns
+        -------
+        np.ndarray
+            Output states.
+        """
         output = np.zeros((len(signal), self.num_nodes))
         for ts in range(len(signal) - 1):
             output[ts, :] = self.first_node.forward(signal[ts + 1])

@@ -1,7 +1,8 @@
-import numpy as np
-from random import random, uniform
+
+from random import random, uniform, gauss
 from nodes.Model import *
 from dataclasses import dataclass
+from math import exp
 
 
 class ParamOpt:
@@ -34,8 +35,8 @@ class ParamOpt:
         best_gamma_all = 0
         for alpha in np.arange(0.05, 0.3, 0.01):
             for eta in np.arange(0.5, 1, 0.05):
-                self.model.last_node.alpha = alpha
-                self.model.last_node.eta = eta
+                self.model.last_node.leak = alpha
+                self.model.last_node.in_scale = eta
 
                 states = self.model.run(self.signal)  # need to pass alpha and eta to reservoir
                 _, x_train, x_valid, x_test = np.split(states, [500, 3750, 500, 500])
@@ -60,8 +61,8 @@ class ParamOpt:
                     best_err = error
                     best_gamma_all = best_gamma
 
-        self.model.last_node.alpha = best_alpha
-        self.model.last_node.eta = best_eta
+        self.model.last_node.leak = best_alpha
+        self.model.last_node.in_scale = best_eta
         self.model.gamma = best_gamma_all
 
         return best_err
@@ -95,11 +96,13 @@ class ParamOpt:
         cur_val: float = uniform(min, max)
         best_val: float = cur_val
 
-    def anneal(self, params_list: list[Param], iterations: int = 10, initial_temp=250):
+    def anneal(self, params_list: list[Param], iterations: int = 100, initial_temp=150, verbose: bool = False):
         """Simulated Annealing for model hyperparameter optimisation.
 
         Tests multiple parameter options based on their min, max, and step values.
         Sets parameters to the best found during the algorithm.
+
+        This uses a simple multiplicative monotonic cooling schedule.
 
         Parameters
         ----------
@@ -108,7 +111,9 @@ class ParamOpt:
         iterations : int
             Number of iterations for annealing to perform.
         initial_temp : int
-
+            Temperature bias in simulated annealing algorithm
+        verbose : bool
+            When true allows printing of error and iteration when best error is found.
         Returns
         -------
         float
@@ -128,9 +133,13 @@ class ParamOpt:
             acceptable = np.exp(error_diff / (initial_temp - i))
             # If error is better or within acceptable range then accept as new best params
             if error_diff > 0 or random() > acceptable:
+                if verbose:
+                    print(f'Err: {error}, iteration: {i} \n')
+
                 best_error = error
                 for param in params_list:
                     param.best_val = param.cur_val
+
         # Final update to ensure best found parameters
         for param in params_list:
             setattr(param.instance, param.name, param.best_val)
@@ -150,7 +159,7 @@ class ParamOpt:
             List of parameters to be stepped.
         """
         for param in params_list:
-            param.cur_val = param.best_val + uniform(param.min, param.max) * param.step
+            param.cur_val = param.best_val + gauss((param.min + param.max), 3) * param.step
             setattr(param.instance, param.name, param.cur_val)
 
     def split_results(self, signal, splits=None):

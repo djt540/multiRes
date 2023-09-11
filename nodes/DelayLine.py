@@ -5,7 +5,12 @@ import numpy as np
 class DelayLine(Node):
     """Implements virtual nodes using a simple mask and time multiplexing.
     Based on: "Information processing using a single dynamical node as complex system"
-    (https://doi.org/10.1038/ncomms1476)
+    [SDN]_
+
+    Citations
+    ---------
+    .. [SDN] Appeltant, L., Soriano, M., Van der Sande, G. et al. Information processing using a single dynamical
+        node as complex system. Nat Commun 2, 468 (2011). https://doi.org/10.1038/ncomms1476
 
     Parameters
     ----------

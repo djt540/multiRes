@@ -3,12 +3,19 @@ from nodes.Model import *
 
 class Rotor(Node):
     """Rotates inputs signal and output states
-    Based on: "Rotating neurons for all-analog implementation of cyclic reservoir computing"
-    (https://doi.org/10.1038/s41467-022-29260-1)
+    Based on: Rotating neurons for all-analog implementation of cyclic reservoir computing [RNR]_
 
-        This Node is aimed to work with the NodeArray node, where Rotor rotates the
+    Notes
+    -----
+        *This Node is aimed to work with the NodeArray node, where Rotor rotates the
         incoming signals and outgoing states the NodeArray passes these signals onto
-        multiple Nodes, splitting the signal evenly between the nodes.
+        multiple Nodes, splitting the signal evenly between the nodes.*
+
+    Citations
+    ---------
+    .. [RNR] Liang, X., Zhong, Y., Tang, J. et al. Rotating neurons for all-analog
+        implementation of cyclic reservoir computing. Nat Commun 13, 1549 (2022).
+        https://doi.org/10.1038/s41467-022-29260-1
 
     Parameters
     ----------
