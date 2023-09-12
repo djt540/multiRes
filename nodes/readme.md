@@ -83,6 +83,10 @@ The node that this node currently wraps in the model
 
 ## nodes.Model module
 
+<div align="middle">
+<img src="https://github.com/djt540/images/blob/main/node.png" width=35%>
+</div>
+
 <!-- !! processed by numpydoc !! -->
 
 ### *class* nodes.Model.Model(node_list: tuple[[Node](#nodes.Model.Node), ...])
