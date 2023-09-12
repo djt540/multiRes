@@ -109,30 +109,44 @@ def test_model(model: Model):
 
 
 if __name__ == '__main__':
+    """Setup of and running the examples
+    """
+    # number of nodes in each reservoir
     nnodes = 100
+    # number of reservoirs in the res list
     res_num = 1
+    # creation of reservoirs
     res = [Reservoir(nnodes) for i in range(res_num)]
+    # calculating the total number of nodes in the model
     total_nodes = nnodes * res_num
 
+    # setup of ESN
     ESN = Model((InputMask(nnodes),
                  res[0]))
 
+    # setup of Rotor
     rot = Model((InputMask(total_nodes),
                  Rotor(res_num, total_nodes),
                  NodeArray(res)))
 
+    # setup of delay line
     delay_line = Model((DelayLine(tau=84, fb_str=0.5),
                         InputMask(nnodes),
                         res[0]))
 
+    # setup of rotor wrapping a delay line
     rot_del = Model((InputMask(total_nodes),
                      Rotor(res_num, total_nodes),
                      DelayLine(tau=18, fb_str=0.5),
                      NodeArray(res)))
 
+    # setup of delay line wrapping a rotor
     del_rot = Model((DelayLine(tau=20, fb_str=0.4),
                      InputMask(total_nodes),
                      Rotor(res_num, total_nodes),
                      NodeArray(res)))
 
-    res_optim(ESN, res)
+    # # Function examples, uncomment to use # #
+    # fb_tau_tester(delay_line)
+    # res_optim(ESN, res)
+    # test_model(rot)
