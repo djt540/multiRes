@@ -2,12 +2,6 @@
 
 ***This readme was generated based on the docstrings from the code and has not been fully checked.***
 
-## Submodules
-
-## util.DataAnalysis module
-
-<!-- !! processed by numpydoc !! -->
-
 ## util.ParamOptim module
 
 <!-- !! processed by numpydoc !! -->
@@ -18,7 +12,7 @@ Bases: `object`
 
 <!-- !! processed by numpydoc !! -->
 
-#### *class* Param(instance: object, name: str, min: float = 0.1, max: float = 0.9, step: float = 0.05, cur_val: float = 0.7931736024319477, best_val: float = 0.7931736024319477)
+#### *class* Param(instance: object, name: str, min: float = 0.1, max: float = 0.9, step: float = 0.05, cur_val: float = 0.7, best_val: float = 0.7)
 
 Bases: `object`
 
@@ -48,21 +42,7 @@ Class for parameter optimization options.
 
 <!-- !! processed by numpydoc !! -->
 
-#### best_val*: float* *= 0.7931736024319477*
-
-#### cur_val*: float* *= 0.7931736024319477*
-
-#### instance*: object*
-
-#### max*: float* *= 0.9*
-
-#### min*: float* *= 0.1*
-
-#### name*: str*
-
-#### step*: float* *= 0.05*
-
-#### anneal(params_list: list[[Param](#util.ParamOptim.ParamOpt.Param)], iterations: int = 100, initial_temp=150, verbose: bool = False)
+### anneal(params_list: list[[Param](#util.ParamOptim.ParamOpt.Param)], iterations: int = 100, initial_temp=150, verbose: bool = False)
 
 Simulated Annealing for model hyperparameter optimisation.
 
@@ -89,13 +69,13 @@ This uses a simple multiplicative monotonic cooling schedule.
 
 <!-- !! processed by numpydoc !! -->
 
-#### grid_search()
+### grid_search()
 
 Simple grid search implementation.
 
 <!-- !! processed by numpydoc !! -->
 
-#### *static* params_step(params_list: list[[Param](#util.ParamOptim.ParamOpt.Param)])
+### *static* params_step(params_list: list[[Param](#util.ParamOptim.ParamOpt.Param)])
 
 Steps the parameters for Simulated Annealing.
 
@@ -108,11 +88,11 @@ and the step amount.
 
 <!-- !! processed by numpydoc !! -->
 
-#### *property* signal
+### *property* signal
 
 <!-- !! processed by numpydoc !! -->
 
-#### split_results(signal, splits=None)
+### split_results(signal, splits=None)
 
 Utility to split the output states
 
@@ -125,29 +105,5 @@ Utility to split the output states
 * **Returns:**
   list[ndarray[Any, dtype[_SCT]]]
   : split states
-
-<!-- !! processed by numpydoc !! -->
-
-### util.ParamOptim.random(/)
-
-<!-- !! processed by numpydoc !! -->
-
-## util.test_ParamOptim module
-
-<!-- !! processed by numpydoc !! -->
-
-### util.test_ParamOptim.basic_po()
-
-<!-- !! processed by numpydoc !! -->
-
-### util.test_ParamOptim.test_anneal()
-
-<!-- !! processed by numpydoc !! -->
-
-### util.test_ParamOptim.test_params_step()
-
-<!-- !! processed by numpydoc !! -->
-
-## Module contents
 
 <!-- !! processed by numpydoc !! -->
